@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Shop - Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-pink': '#ffe8f0', 'main-pink': '#f28fab', 'dark-pink': '#d65b7a',
+                        'card-white': 'rgba(255, 255, 255, 0.9)', 'soft-cream': '#fffdf6',
+                        'text-gray': '#6b5c60', 'receipt-bg': '#f9f6e6', 'receipt-text': '#2b2b2b'
+                    },
+                    fontFamily: { sans: ['Prompt', 'sans-serif'], mono: ['Space Mono', 'monospace'], }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #ffe8f0;
+            background-image: radial-gradient(circle at 15% 50%, rgba(255,255,255,0.4) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(255,255,255,0.4) 0%, transparent 50%);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .star-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .star-shape {
+            position: absolute; background: white;
+            clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
+            bottom: -50px; opacity: 0; animation: floatUpAnim linear infinite 15s;
+        }
+        @keyframes floatUpAnim { 0% { bottom: -10%; transform: translateX(0) rotate(0deg); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { bottom: 110%; transform: translateX(50px) rotate(180deg); opacity: 0; } }
+        @keyframes scrollText { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+        .animate-scroll-text { display: inline-block; white-space: nowrap; animation: scrollText 15s linear infinite; will-change: transform; }
+        
+        progress::-webkit-progress-bar { background-color: #ffe8f0; border-radius: 999px; }
+        progress::-webkit-progress-value { background-color: #f28fab; border-radius: 999px; transition: width 0.5s ease; }
+
+        .receipt-edge-top {
+            background: linear-gradient(135deg, transparent 50%, #f9f6e6 50%), linear-gradient(225deg, transparent 50%, #f9f6e6 50%);
+            background-position: top left; background-size: 16px 16px; background-repeat: repeat-x;
+            height: 16px; width: 100%; position: absolute; top: -15px; left: 0;
+        }
+        .receipt-edge-bottom {
+            background: linear-gradient(135deg, #f9f6e6 50%, transparent 50%), linear-gradient(225deg, #f9f6e6 50%, transparent 50%);
+            background-position: bottom left; background-size: 16px 16px; background-repeat: repeat-x;
+            height: 16px; width: 100%; position: absolute; bottom: -15px; left: 0;
+        }
+    </style>
+</head>
+<body class="text-text-gray antialiased relative overflow-x-hidden min-h-screen pb-10">
+
+    <div class="star-container">
+        <div class="star-shape w-4 h-4 left-[5%]" style="animation-delay: 0s;"></div>
+        <div class="star-shape w-6 h-6 left-[15%]" style="animation-delay: 2s;"></div>
+        <div class="star-shape w-8 h-8 left-[40%]" style="animation-delay: 1s;"></div>
+        <div class="star-shape w-5 h-5 left-[55%]" style="animation-delay: 7s;"></div>
+        <div class="star-shape w-10 h-10 left-[75%]" style="animation-delay: 3s;"></div>
+    </div>
+
+    <div class="bg-main-pink text-white text-[11px] font-medium py-1.5 overflow-hidden sticky top-0 z-40 shadow-sm w-full">
+        <div class="animate-scroll-text">✨ เว็บแอปพรีเมียม / เติมเกมส์ / เว็บไบโอ 🚀 โทนมืด / โทนพาสเทล / โทนสดใส ✨ เว็บแอปพรีเมียม / เติมเกมส์ / เว็บไบโอ 🚀</div>
+    </div>
+
+    <button onclick="toggleMenu()" class="fixed top-10 right-4 z-50 bg-white/90 backdrop-blur p-2.5 rounded-full shadow-lg text-main-pink hover:bg-white transition active:scale-95 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+    </button>
+
+    <main class="max-w-[400px] mx-auto pt-6 px-4 relative z-10">
+        <!-- 1. ส่วนหัว -->
+        <div class="bg-card-white rounded-3xl p-6 shadow-sm border border-white mb-6 text-center">
+            <div class="w-20 h-20 mx-auto bg-main-pink text-white rounded-full flex items-center justify-center font-bold text-lg mb-3 shadow-inner border-4 border-white animate-float">LOGO</div>
+            <h1 class="text-xl font-bold text-dark-pink mb-1">ชื่อร้านค้า</h1>
+            <p class="text-xs text-main-pink mb-4">Welcome to my shop ✨</p>
+            <div class="flex flex-wrap justify-center gap-2 mb-3">
+                <span class="bg-[#fffdf6] px-3 py-1.5 rounded-full text-[10px] font-medium shadow-sm border border-white">💻 เว็บครบวงจร</span>
+                <span class="bg-[#fffdf6] px-3 py-1.5 rounded-full text-[10px] font-medium shadow-sm border border-white">📱 เว็บเรทราคา/เติมเกม</span>
+                <span class="bg-[#fffdf6] px-3 py-1.5 rounded-full text-[10px] font-medium shadow-sm border border-white">✨ เว็บไบโอ (Bio)</span>
+            </div>
+            <p class="text-[9px] text-gray-400">* บริการเว็บอื่นๆ สอบถามเพิ่มเติมได้เลยค่า</p>
+        </div>
+
+        <!-- 2. วิดีโอพรีเซนต์ -->
+        <div class="bg-card-white rounded-3xl p-3 shadow-sm border border-white mb-6">
+            <div class="bg-gradient-to-br from-[#ffd1df] to-[#ffb6c1] rounded-2xl aspect-[16/9] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-pink-300 text-xl">🩷</span>
+                    <div class="w-12 h-12 bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                    <span class="text-pink-300 text-xl">🩷</span>
+                </div>
+                <div class="bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs font-medium">[ คลิปหัวใจสีพาสเทล ]</div>
+            </div>
+        </div>
+
+        <!-- 3. สถานะคิวงาน -->
+        <div class="mb-8 cursor-pointer hover:scale-[1.02] transition-transform" onclick="toggleQueueCalendarModal()">
+            <div id="mainPageQueueContainer"><p class="text-center text-xs text-gray-400 py-4">กำลังโหลดคิวงาน...</p></div>
+        </div>
+
+        <!-- 4. ตัวอย่างผลงานเว็บ -->
+        <div class="mb-8">
+            <h2 class="text-sm font-bold text-dark-pink mb-3 px-2">✨ ตัวอย่างผลงานเว็บ</h2>
+            <div class="flex gap-4 overflow-x-auto hide-scroll snap-x pb-2 px-2">
+                <div class="min-w-[160px] aspect-[4/5] bg-gradient-to-br from-[#ffb6c1] to-[#f28fab] rounded-2xl snap-center shadow-sm border border-white flex items-center justify-center relative"><div class="absolute top-3 left-3 flex gap-1.5"><div class="w-2 h-2 rounded-full bg-white/70"></div><div class="w-2 h-2 rounded-full bg-white/70"></div></div><span class="text-white font-bold tracking-wider text-lg mix-blend-overlay">[Image 1]</span></div>
+                <div class="min-w-[160px] aspect-[4/5] bg-gradient-to-br from-[#ffe4b5] to-[#ffdead] rounded-2xl snap-center shadow-sm border border-white flex items-center justify-center relative"><div class="absolute top-3 left-3 flex gap-1.5"><div class="w-2 h-2 rounded-full bg-white/70"></div><div class="w-2 h-2 rounded-full bg-white/70"></div></div><span class="text-[#d65b7a] font-bold tracking-wider text-lg mix-blend-overlay">[Image 2]</span></div>
+            </div>
+        </div>
+
+        <!-- 5. How to Order -->
+        <div class="bg-card-white rounded-3xl p-5 shadow-sm border border-white mb-6">
+            <div class="flex justify-between items-center mb-4 border-b border-pink-100 pb-3">
+                <div><h2 class="text-base font-bold text-dark-pink flex items-center gap-2">📝 How to Order</h2><p class="text-[10px] text-gray-500 mt-0.5">ขั้นตอนการสั่งทำเว็บไซต์</p></div>
+                <span class="bg-main-pink text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider">OPEN</span>
+            </div>
+            <ul class="space-y-4 text-xs">
+                <li class="flex gap-3"><span class="text-main-pink font-bold text-sm">1.</span><div><strong class="text-dark-pink">เลือกแบบที่ใช่:</strong> เลือกสไตล์เว็บที่ชอบ แล้วกรอกรายละเอียดบรีฟให้ครบถ้วนก่อนส่งน้า</div></li>
+                <li class="flex gap-3"><span class="text-main-pink font-bold text-sm">2.</span><div><strong class="text-dark-pink">ชำระเงิน:</strong> ชำระตามบิลที่ระบบบอก และชำระส่วนต่างอีกครั้งตอนเว็บเสร็จ</div></li>
+                <li class="flex gap-3"><span class="text-main-pink font-bold text-sm">3.</span><div><strong class="text-dark-pink">รอรับความปัง:</strong> ปกติใช้เวลาทำ 4-6 ชม. (ถ้าคิวเยอะ 1-2 วัน) เค้าจะเร่งให้เสร็จไวที่สุดค่า</div></li>
+                <li class="flex gap-3"><span class="text-main-pink font-bold text-sm">4.</span><div><strong class="text-dark-pink">ตรวจเช็คความเรียบร้อย:</strong> ส่งงานให้ตรวจแล้ว พี่จ๋าแก้ฟรีได้ 1 รอบนะคะ ✨</div></li>
+                <li class="flex gap-3"><span class="text-main-pink font-bold text-sm">5.</span><div><strong class="text-dark-pink">รับลิงก์เว็บ:</strong> ชำระยอดส่วนเกินตามจริง (ถ้ามี) แล้วรับลิงก์ใช้งานได้เลยค่า 💖</div></li>
+            </ul>
+        </div>
+
+        <!-- 6. Important Notes -->
+        <div class="bg-soft-cream rounded-3xl p-5 shadow-sm border border-white mb-6">
+            <h2 class="text-sm font-bold text-yellow-600 mb-3 flex items-center gap-2">⚠️ Important Notes</h2>
+            <div class="bg-orange-100/50 text-orange-500 font-bold text-center py-2 rounded-xl text-xs mb-4 border border-dashed border-orange-200">✨ แก้ฟรี 1 ครั้ง! (ก่อนส่งลิงก์) ✨</div>
+            <p class="text-xs font-bold text-dark-pink mb-2">ค่าบริการเพิ่มเติมหลังส่งงาน:</p>
+            <div class="bg-white rounded-xl p-3 text-xs space-y-2.5 mb-4 border border-pink-50">
+                <div class="flex justify-between border-b border-gray-50 pb-2"><span class="text-gray-600">• แก้ไขข้อความ (ตำแหน่งเดิม)</span><span class="font-bold text-dark-pink">5 ฿ / จุด</span></div>
+                <div class="flex justify-between border-b border-gray-50 pb-2"><span class="text-gray-600">• เปลี่ยนรูปแบบแบนเนอร์ / โลโก้</span><span class="font-bold text-dark-pink">29 ฿ / จุด</span></div>
+                <div class="flex justify-between"><span class="text-gray-600">• ย้ายตำแหน่ง / แก้โครงสร้าง</span><span class="font-bold text-dark-pink">39 ฿ / จุด</span></div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <h3 class="text-red-600 font-bold text-xs flex items-center gap-1.5 mb-2">📌 Shop Rules (โปรดอ่านน้า)</h3>
+                <ul class="list-disc pl-4 text-[11px] text-gray-700 space-y-1.5 marker:text-red-400">
+                    <li>ราคาอาจปรับตามความยากง่ายของงาน แจ้งเรทชัดเจนแต่แรกแน่นอนค่ะ</li>
+                    <li>หลังส่งงานแล้ว <span class="text-red-600 font-bold underline">รบกวนตรวจและตอบกลับภายใน 30 นาทีนะคะ</span></li>
+                    <li>โอนแล้วไม่คืนเงินทุกกรณี / ยกเลิกหลังตรวจงาน = ไม่คืนเงินน้า</li>
+                    <li>งานเร่งด่วน คิดราคา x2 ค่า</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7. เลือกรายการสั่งทำเว็บ -->
+        <div class="bg-card-white rounded-3xl p-5 shadow-sm border border-white mb-6">
+            <h2 class="text-base font-bold text-dark-pink mb-4 border-b border-pink-100 pb-3">📋 เลือกรายการสั่งทำเว็บ</h2>
+            <div class="bg-soft-cream rounded-xl p-4 text-xs border border-pink-50 mb-5">
+                <div class="font-bold text-dark-pink flex items-center gap-1 mb-2">📌 เรทราคาทำเว็บไซต์ <span class="font-normal text-gray-500">(จ่ายส่วนเกินหลังงานเสร็จ)</span></div>
+                <ul class="space-y-1.5 text-gray-600">
+                    <li>• ไม่เกิน 200 บรรทัด : <span class="text-main-pink font-bold">129.- (ราคามัดจำ)</span></li>
+                    <li>• ขนาด 400+ บรรทัด : <span class="text-main-pink font-bold">179.-</span></li>
+                    <li>• ขนาด 600+ บรรทัด : <span class="text-main-pink font-bold">200.-</span></li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <div class="font-bold text-gray-700 text-xs flex items-center gap-1.5 mb-2">💻 ทำเว็บไซต์ <span class="font-normal text-gray-500 text-[10px]">(ชำระมัดจำเริ่มต้น)</span></div>
+                <div class="bg-white border-2 border-pink-100 rounded-xl p-3 flex justify-between items-center shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">📱</span>
+                        <div class="flex flex-col"><span class="text-xs font-medium text-gray-700">มัดจำทำเว็บ</span><span class="text-[10px] font-bold text-main-pink">129 ฿</span></div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-pink-50 rounded-full p-1 border border-pink-100">
+                        <button onclick="updateQty('main', -1)" class="w-6 h-6 rounded-full bg-white text-main-pink font-bold shadow-sm active:scale-95 transition">-</button>
+                        <span id="qty_main" class="text-xs font-bold w-4 text-center">1</span>
+                        <button onclick="updateQty('main', 1)" class="w-6 h-6 rounded-full bg-main-pink text-white font-bold shadow-sm active:scale-95 transition">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="font-bold text-gray-700 text-xs flex items-center gap-1.5 mb-2 border-t border-dashed border-pink-200 pt-4">✨ บริการเสริมอื่นๆ <span class="font-normal text-gray-400 text-[10px]">(บวกเพิ่มค่าคอมให้ตัวแทนด้วย)</span></div>
+                <div class="space-y-2.5">
+                    <div class="bg-soft-cream border border-white rounded-xl p-2.5 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center gap-3"><span class="text-lg">🎨</span><div class="flex flex-col"><span class="text-[11px] text-gray-700">ออกแบบเว็บใหม่ / มีแบบร่างมาทำ</span><span class="text-[10px] font-bold text-main-pink">150 ฿</span></div></div>
+                        <div class="flex items-center gap-2 bg-pink-50 rounded-full p-1 border border-pink-100">
+                            <button onclick="updateQty('addon1', -1)" class="w-5 h-5 rounded-full bg-white text-main-pink font-bold shadow-sm active:scale-95">-</button><span id="qty_addon1" class="text-[10px] font-bold w-3 text-center">0</span><button onclick="updateQty('addon1', 1)" class="w-5 h-5 rounded-full bg-main-pink text-white font-bold shadow-sm active:scale-95">+</button>
+                        </div>
+                    </div>
+                    <div class="bg-soft-cream border border-white rounded-xl p-2.5 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center gap-3"><span class="text-lg">🖼️</span><div class="flex flex-col"><span class="text-[11px] text-gray-700">เพิ่มรูป Banner (เซตละ 1-2 รูป)</span><span class="text-[10px] font-bold text-main-pink">29 ฿</span></div></div>
+                        <div class="flex items-center gap-2 bg-pink-50 rounded-full p-1 border border-pink-100">
+                            <button onclick="updateQty('addon2', -1)" class="w-5 h-5 rounded-full bg-white text-main-pink font-bold shadow-sm active:scale-95">-</button><span id="qty_addon2" class="text-[10px] font-bold w-3 text-center">0</span><button onclick="updateQty('addon2', 1)" class="w-5 h-5 rounded-full bg-main-pink text-white font-bold shadow-sm active:scale-95">+</button>
+                        </div>
+                    </div>
+                    <div class="bg-soft-cream border border-white rounded-xl p-2.5 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center gap-3"><span class="text-lg">⚙️</span><div class="flex flex-col"><span class="text-[11px] text-gray-700">เพิ่มฟังก์ชันการใช้งานอื่นๆ</span><span class="text-[10px] font-bold text-main-pink">99 ฿</span></div></div>
+                        <div class="flex items-center gap-2 bg-pink-50 rounded-full p-1 border border-pink-100">
+                            <button onclick="updateQty('addon3', -1)" class="w-5 h-5 rounded-full bg-white text-main-pink font-bold shadow-sm active:scale-95">-</button><span id="qty_addon3" class="text-[10px] font-bold w-3 text-center">0</span><button onclick="updateQty('addon3', 1)" class="w-5 h-5 rounded-full bg-main-pink text-white font-bold shadow-sm active:scale-95">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="toggleOrderModal()" class="w-full bg-gradient-to-r from-main-pink to-[#f47b9d] text-white font-bold py-4 rounded-2xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2 border-2 border-white">
+                📝 กดสั่งทำ & ระบุรายละเอียดบรีฟ
+            </button>
+        </div>
+
+        <div class="flex gap-3 mb-8">
+            <button class="flex-1 bg-white text-gray-600 font-medium py-3.5 rounded-full shadow-sm border border-pink-100 text-xs flex items-center justify-center gap-2">💬 ติดต่อสอบถาม</button>
+            <button class="flex-1 bg-[#f0a8bc] text-white font-medium py-3.5 rounded-full shadow-sm border border-white text-xs flex items-center justify-center gap-2">🌐 ช่องทางอื่นๆ</button>
+        </div>
+    </main>
+
+    <!-- Sidebar Menu -->
+    <div id="sideMenuOverlay" class="fixed inset-0 bg-black/40 z-[55] opacity-0 pointer-events-none transition-opacity duration-300" onclick="toggleMenu()"></div>
+    <div id="sideMenu" class="fixed top-0 right-0 h-full w-64 bg-card-white backdrop-blur-md z-[60] shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col rounded-l-3xl border-l border-white">
+        <div class="p-5 flex justify-between items-center border-b border-pink-100">
+            <h2 class="font-bold text-dark-pink text-lg">เมนูหลัก</h2>
+            <button onclick="toggleMenu()" class="w-8 h-8 bg-pink-50 rounded-full text-main-pink font-bold">✕</button>
+        </div>
+        <div class="p-4 space-y-3 flex-1 overflow-y-auto">
+            <button onclick="toggleMenu(); setTimeout(toggleQueueCalendarModal, 300)" class="w-full bg-white border border-pink-50 rounded-2xl p-3.5 text-left flex items-center gap-3 shadow-sm group">
+                <span class="text-lg">📌</span><span class="text-xs font-bold text-gray-700">เช็คสถานะคิวงาน</span>
+            </button>
+            <button onclick="toggleMenu(); setTimeout(toggleOrderModal, 300)" class="w-full bg-white border border-pink-50 rounded-2xl p-3.5 text-left flex items-center gap-3 shadow-sm group">
+                <span class="text-lg">📝</span><span class="text-xs font-bold text-dark-pink">สั่งทำเว็บ & ส่งบรีฟ</span>
+            </button>
+            <button onclick="toggleMenu(); setTimeout(openPublicAgentCheck, 300)" class="w-full bg-pink-50 border border-pink-100 rounded-2xl p-3.5 text-left flex items-center gap-3 shadow-sm group hover:border-main-pink transition">
+                <span class="text-lg">🔍</span><span class="text-xs font-bold text-main-pink">ตรวจสอบตัวแทน (ลูกค้า)</span>
+            </button>
+            <button onclick="toggleMenu(); setTimeout(() => checkSecurity('agent'), 300)" class="w-full bg-soft-cream border border-pink-100 rounded-2xl p-3.5 text-left flex items-center gap-3 shadow-sm group">
+                <span class="text-lg">🕵️</span><span class="text-xs font-bold text-gray-700">ระบบตัวแทน (เช็คบิล/โอนเงิน)</span>
+            </button>
+        </div>
+        <div class="p-4 border-t border-pink-100">
+            <button onclick="toggleMenu(); setTimeout(() => checkSecurity('admin'), 300)" class="w-full bg-gray-800 text-white rounded-2xl p-3.5 text-left flex items-center gap-3 shadow-sm justify-center hover:bg-gray-700 active:scale-95">
+                <span class="text-lg">⚙️</span><span class="text-xs font-bold">ระบบหลังบ้าน (Admin)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. Modal สั่งทำเว็บ -->
+    <div id="orderModal" class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 transform translate-y-10 transition-transform duration-300 scale-95 max-h-[90vh] overflow-y-auto hide-scroll" id="orderModalContent">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modalTitleText" class="text-dark-pink font-bold text-lg flex items-center gap-2">📝 ส่งบรีฟสั่งทำเว็บ</h2>
+                <button onclick="toggleOrderModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+            </div>
+
+            <!-- STEP 1: ฟอร์มบรีฟ -->
+            <div id="step1Form">
+                <p class="text-[10px] text-gray-500 mb-4 bg-pink-50 p-2 rounded-lg border border-pink-100">💡 <b>เคล็ดลับ:</b> พิมพ์ค้างไว้ได้เลย ลากขยายกล่องข้อความได้ด้วยจ้า</p>
+                <form class="space-y-4 text-xs">
+                    
+                    <div class="bg-white p-3 rounded-xl border border-pink-100 shadow-sm space-y-3">
+                        <h3 class="font-bold text-dark-pink border-b border-pink-50 pb-1">1. ข้อมูลทั่วไปของลูกค้า</h3>
+                        <div class="flex gap-2">
+                            <div class="flex-1"><label class="block text-gray-700 font-bold mb-1">ชื่อร้าน</label><input type="text" id="draft_shopName" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink"></div>
+                            <div class="flex-1">
+                                <label class="block text-gray-700 font-bold mb-1">คำโปรย</label>
+                                <div class="relative">
+                                    <input type="text" id="draft_slogan" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink pr-8">
+                                    <button type="button" id="btnAIslogan" onclick="generateSlogan()" class="absolute right-2 top-1/2 -translate-y-1/2 text-main-pink hover:scale-110 transition cursor-pointer" title="✨ AI คิดคำโปรย">✨</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div><label class="block text-gray-700 font-bold mb-1">📱 ช่องทางติดต่อ (ลิงก์ติดต่อ)</label><input type="text" id="draft_contact" placeholder="เช่น ลิงก์ Line, FB Page" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink"></div>
+                        
+                        <div class="border-t border-dashed border-pink-100 pt-2 mt-2">
+                            <label class="block text-gray-700 font-bold mb-1">สั่งกับตัวแทนรหัส (ถ้ามี)</label>
+                            <input type="text" id="draft_agent" oninput="verifyAgentInForm()" placeholder="จงเขียนรหัสตัวแทน เช่น 00A" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink text-center font-bold tracking-widest text-main-pink">
+                            <div id="formAgentCard" class="hidden mt-2 p-2 bg-pink-50 rounded-xl border border-pink-100 transition-all"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border border-pink-100 shadow-sm space-y-3">
+                        <h3 class="font-bold text-dark-pink border-b border-pink-50 pb-1">2. ข้อมูลที่จะใส่ในเว็บไซต์</h3>
+                        <div><label class="block text-gray-700 font-bold mb-1">🎨 งานที่ร้านรับทำ (บริการของลูกค้า)</label><textarea id="draft_services" rows="3" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 resize-y focus:border-main-pink"></textarea></div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-1">⭐️ ตัวอย่างงานลูกค้า (ใส่ลิงก์ที่ให้กดไปดูได้)</label>
+                            <div id="dynamicLinksContainer" class="space-y-2 mb-2">
+                                <div class="flex gap-1 link-item">
+                                    <input type="text" placeholder="ชื่อลิงก์ (เช่น เช็คคิว)" class="w-1/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 focus:border-main-pink text-[10px] link-title">
+                                    <input type="url" placeholder="URL ลิงก์สาธารณะ" class="w-2/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 focus:border-main-pink text-[10px] link-url">
+                                </div>
+                            </div>
+                            <button type="button" onclick="addLinkField()" class="text-main-pink font-bold text-[10px] bg-pink-50 px-3 py-1.5 rounded-lg active:scale-95 border border-pink-100">+ เพิ่มลิงก์อีก</button>
+                        </div>
+
+                        <div><label class="block text-gray-700 font-bold mb-1">📋 เงื่อนไขของร้านลูกค้า</label><textarea id="draft_conditions" rows="3" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 resize-y focus:border-main-pink"></textarea></div>
+                        <div><label class="block text-gray-700 font-bold mb-1">📋 ขั้นตอนการสั่งของร้านลูกค้า</label><textarea id="draft_orderSteps" rows="3" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 resize-y focus:border-main-pink"></textarea></div>
+                        <div><label class="block text-gray-700 font-bold mb-1">📍 กฎของร้าน 📍</label><textarea id="draft_shopRules" rows="3" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 resize-y focus:border-main-pink"></textarea></div>
+                    </div>
+
+                    <!-- 🌟 3. สไตล์และบริการเสริม 🌟 -->
+                    <div class="bg-white p-3 rounded-xl border border-pink-100 shadow-sm space-y-3">
+                        <h3 class="font-bold text-dark-pink border-b border-pink-50 pb-1">3. สไตล์ & บริการเสริม</h3>
+                        
+                        <!-- กรณีไม่ได้ซื้อออกแบบใหม่ -->
+                        <div id="standardDesignFields" class="space-y-3">
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-1">⭐️ เลือกแบบตัวอย่างของร้าน</label>
+                                <select id="draft_template" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink text-gray-700">
+                                    <option value="">-- เลือกแบบที่อยากได้ --</option>
+                                    <option value="เหมือนตัวอย่างที่ 1">เหมือนตัวอย่างที่ 1</option>
+                                    <option value="เหมือนตัวอย่างที่ 2">เหมือนตัวอย่างที่ 2</option>
+                                    <option value="เหมือนตัวอย่างที่ 3">เหมือนตัวอย่างที่ 3</option>
+                                    <option value="เหมือนตัวอย่างที่ 4">เหมือนตัวอย่างที่ 4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-1">🎀 โทนสีที่อยากปรับ (พิมพ์บอกได้เลย)</label>
+                                <input type="text" id="draft_colorSimple" placeholder="เช่น ขอเปลี่ยนสีพื้นหลังเป็นสีฟ้าอ่อน" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink">
+                            </div>
+                        </div>
+
+                        <!-- กรณีซื้อบริการออกแบบใหม่ -->
+                        <div id="customDesignFields" class="hidden space-y-3">
+                            <div class="bg-orange-50 p-2 rounded-lg border border-orange-100 mb-2">
+                                <p class="text-[10px] font-bold text-orange-600">✨ คุณได้เลือกบริการ "ออกแบบใหม่ / มีแบบร่าง"</p>
+                            </div>
+                            <div class="flex gap-2 items-start">
+                                <div class="flex-1">
+                                    <label class="block text-gray-700 font-bold mb-1">🎀 สีที่อยากได้</label>
+                                    <input type="text" id="draft_colorCustom" placeholder="พิมพ์บอกสี เช่น ดำ-แดง" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink mb-1">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-gray-700 font-bold mb-1">⭐️ แนวที่อยากได้</label>
+                                    <input type="text" id="draft_themeCustom" placeholder="เช่น มินิมอล, Y2K, เกมมิ่ง" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink">
+                                </div>
+                            </div>
+                            <div class="border-t border-dashed border-pink-200 pt-2 mt-2">
+                                <label class="block text-gray-700 font-bold mb-1 text-[10px]">รูปแบบการออกแบบ (แบบร่าง)</label>
+                                <select id="draft_designChoice" onchange="toggleDesignLinkInput()" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-orange-100 mb-2 focus:border-main-pink text-gray-700">
+                                    <option value="ให้ร้านออกแบบให้">ให้ทางร้านคิดแบบให้ใหม่เลย</option>
+                                    <option value="มีแบบร่างมาให้ทำ">มีแบบร่างมาเอง (แนบลิงก์ Google Drive)</option>
+                                </select>
+                                <div id="designLinkInputContainer" class="hidden transition-all">
+                                    <input type="text" id="draft_customDesignLink" placeholder="วางลิงก์ Google Drive รูปแบบร่างของคุณ" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-orange-200 focus:border-main-pink">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ใช้ร่วมกันทุกรูปแบบ -->
+                        <div class="border-t border-dashed border-pink-100 pt-2 mt-2">
+                            <label class="block text-gray-700 font-bold mb-1">แนบรูปโลโก้/แบนเนอร์ (ลิงก์ Google Drive)</label>
+                            <input type="text" id="draft_logoLink" placeholder="วางลิงก์ไดรฟ์ที่เปิดสาธารณะ" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 focus:border-main-pink">
+                        </div>
+                        
+                        <div id="extraFuncContainer" class="hidden mt-2">
+                            <label class="block text-gray-700 font-bold mb-1 text-[10px]">⚙️ ระบุฟังก์ชันเพิ่มเติม (ตามที่บวกเพิ่มไว้)</label>
+                            <input type="text" id="draft_extraFunctions" placeholder="ฟังก์ชันที่ต้องการ (เช่น แชทสด, เพลงพื้นหลัง)" class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-orange-100 focus:border-main-pink">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border border-pink-100 shadow-sm">
+                        <label class="block font-bold mb-1 text-dark-pink">เติมรายละเอียดอื่นๆ (Detail / หมายเหตุ)</label>
+                        <textarea id="draft_brief" rows="3" placeholder="ระบุเพิ่มเติมได้ที่นี่..." class="w-full bg-soft-cream rounded-lg px-3 py-2 outline-none border border-pink-50 resize-y focus:border-main-pink"></textarea>
+                        <button type="button" onclick="enhanceBrief()" id="btnEnhanceBrief" class="mt-2 w-full text-[10px] bg-gradient-to-r from-purple-50 to-pink-50 text-purple-600 font-bold px-3 py-2 rounded-lg border border-purple-100 active:scale-95 transition flex items-center justify-center gap-1 shadow-sm hover:shadow">✨ ให้ AI ช่วยเรียบเรียงบรีฟให้เป๊ะขึ้น</button>
+                    </div>
+
+                    <div class="bg-pink-50 rounded-xl p-4 flex justify-between items-center border border-pink-100 mt-2">
+                        <span class="font-bold text-gray-700">ยอดมัดจำรวม:</span><span id="modalDepositTotal" class="text-xl font-bold text-main-pink">129 ฿</span>
+                    </div>
+                    <button type="button" onclick="showOrderSummary()" class="w-full bg-gradient-to-r from-main-pink to-[#f47b9d] text-white font-bold py-3.5 rounded-xl shadow-md transform transition active:scale-95 flex items-center justify-center gap-2 mt-2">
+                        🔍 ตรวจสอบ & สรุปออเดอร์
+                    </button>
+                </form>
+            </div>
+
+            <!-- STEP 2: สรุปออเดอร์ -->
+            <div id="step2Summary" class="hidden space-y-4">
+                <div class="bg-[#fffdf6] border border-pink-100 p-4 rounded-2xl text-xs space-y-3 shadow-sm max-h-[50vh] overflow-y-auto hide-scroll">
+                    <div class="space-y-1 border-b border-pink-50 pb-2">
+                        <p><b class="text-gray-700">ชื่อลูกค้า/ร้าน:</b> <span id="sum_shopName" class="text-dark-pink font-bold"></span></p>
+                        <p><b class="text-gray-700">ติดต่อ:</b> <span id="sum_contact" class="text-gray-600 break-all"></span></p>
+                        <p><b class="text-gray-700">ตัวแทน:</b> <span id="sum_agent" class="text-main-pink font-bold"></span></p>
+                    </div>
+                    <div class="space-y-2 pb-1 text-gray-600">
+                        <p><b class="text-gray-700">🎀 สี/แนว:</b> <span id="sum_style" class="text-dark-pink font-bold"></span> | <span id="sum_refWork"></span></p>
+                        <p class="text-[10px] text-gray-400 mt-2 pt-2 border-t border-dashed border-pink-100">* รายละเอียดบรีฟเต็มและลิงก์ต่างๆ ระบบบันทึกส่งให้แอดมินเรียบร้อยแล้วค่ะ</p>
+                    </div>
+                </div>
+                <div class="bg-pink-50 rounded-xl p-3 flex justify-between items-center border border-pink-100">
+                    <span class="font-bold text-xs">ยอดมัดจำที่ต้องชำระ:</span><span id="sumDepositTotal" class="text-lg font-bold text-main-pink">129 ฿</span>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="editOrder()" class="flex-1 bg-white border border-pink-200 text-gray-500 font-bold py-3 rounded-xl transition hover:bg-gray-50 active:scale-95 text-xs">✏️ กลับไปแก้ไข</button>
+                    <button type="button" onclick="confirmFinalOrder()" class="flex-1 bg-main-pink text-white font-bold py-3 rounded-xl shadow-md transition hover:bg-[#d65b7a] active:scale-95 text-xs">✅ ยืนยันออเดอร์</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: ใบเสร็จ (SLIP) -->
+            <div id="step3Success" class="hidden py-4 space-y-4 flex flex-col items-center">
+                <div id="slipCaptureArea" class="bg-receipt-bg text-receipt-text w-full p-6 relative font-mono shadow-md mt-4 mb-2">
+                    <div class="receipt-edge-top"></div>
+                    <div class="text-center mb-4 border-b border-dashed border-gray-400 pb-4"><h2 class="text-2xl font-bold tracking-widest uppercase">RECEIPT</h2><p class="text-[10px] mt-1 uppercase font-bold text-gray-500">MY SHOP OFFICIAL</p></div>
+                    <div class="space-y-2 text-[11px] mb-4">
+                        <div class="flex justify-between"><span class="font-bold">QUEUE NO:</span><span id="slipQueueId" class="font-bold text-sm bg-gray-200 px-2 py-0.5 rounded"></span></div>
+                        <div class="flex justify-between"><span>DATE:</span><span id="slipDate"></span></div>
+                        <div class="flex justify-between"><span>CUSTOMER:</span><span id="slipShopName" class="font-bold"></span></div>
+                        <div class="flex justify-between border-b border-dashed border-gray-400 pb-3"><span>AGENT ID:</span><span id="slipAgent"></span></div>
+                    </div>
+                    <div class="mb-4"><p class="text-[10px] font-bold mb-2">ORDER ITEMS:</p><div id="slipItemsList" class="space-y-1.5 text-[10px]"></div></div>
+                    <div class="border-t border-dashed border-gray-400 pt-3 flex justify-between items-end mb-6"><span class="font-bold">DEPOSIT TOTAL</span><span id="slipTotal" class="text-xl font-bold"></span></div>
+                    <div class="flex justify-center mb-1"><div class="flex h-10 gap-[2px]"><div class="w-1 bg-receipt-text"></div><div class="w-2 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-3 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-2 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-2 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-3 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-2 bg-receipt-text"></div><div class="w-1 bg-receipt-text"></div><div class="w-2 bg-receipt-text"></div></div></div>
+                    <p class="text-center text-[8px] tracking-[0.3em] font-bold" id="slipBarcodeNum"></p>
+                    <div class="receipt-edge-bottom"></div>
+                </div>
+                <div class="w-full text-center space-y-2 pt-2">
+                    <p class="text-[11px] text-green-700 font-bold bg-green-50 p-2 rounded-lg border border-green-200">✅ ระบบส่งบิล & ข้อความสรุปงานอัตโนมัติแล้ว!</p>
+                    <button type="button" onclick="toggleOrderModal()" class="w-full bg-white border border-gray-200 text-gray-700 font-bold py-3.5 rounded-xl shadow-sm hover:bg-gray-50 active:scale-95 text-sm">ปิดหน้าต่าง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modal เช็คคิวงาน (ปฏิทิน) -->
+    <div id="queueCalendarModal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-[#fffdf6] rounded-3xl w-full max-w-[400px] p-5 transform translate-y-10 transition-transform duration-300 scale-95 max-h-[90vh] overflow-y-auto hide-scroll" id="queueCalendarModalContent">
+            <button onclick="toggleQueueCalendarModal()" class="absolute top-4 right-4 w-8 h-8 bg-white shadow-sm rounded-full text-gray-400">✕</button>
+            <div class="flex items-center gap-2 mb-4"><span class="text-2xl">📅</span><h2 class="text-dark-pink font-bold text-lg">ระบบเช็คคิวงาน</h2></div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 mb-5">
+                <div class="flex justify-between items-center mb-3"><button class="text-gray-400 font-bold">&lt;</button><div class="text-center font-bold text-dark-pink text-sm">เมษายน 2026</div><button class="text-gray-400 font-bold">&gt;</button></div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 mb-2"><div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div></div>
+                <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium">
+                    <div class="p-1"></div><div class="p-1"></div><div class="p-1"></div><div class="p-1 text-gray-300">1</div><div class="p-1 text-gray-300">2</div><div class="p-1 text-gray-300">3</div><div class="p-1 text-gray-300">4</div><div class="p-1 text-gray-300">5</div><div class="p-1 text-gray-300">6</div><div class="p-1 text-gray-300">7</div><div class="p-1 text-gray-300">8</div><div class="p-1 text-gray-300">9</div>
+                    <div class="p-1 text-green-600 bg-green-50 rounded-md font-bold relative group">10<span class="absolute -top-1 -right-1 flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span></div>
+                    <div class="p-1 text-gray-300">11</div><div class="p-1 text-gray-300">12</div><div class="p-1 text-gray-300">13</div><div class="p-1 text-gray-300">14</div><div class="p-1 text-gray-300">15</div><div class="p-1 text-gray-300">16</div><div class="p-1 text-gray-300">17</div><div class="p-1 text-gray-300">18</div><div class="p-1 text-gray-300">19</div><div class="p-1 text-gray-300">20</div>
+                    <div class="p-1.5 font-bold text-main-pink bg-pink-100 rounded-lg border border-pink-200">21</div><div class="p-1.5 font-bold text-white bg-main-pink rounded-lg shadow-sm">22</div><div class="p-1.5 font-bold text-main-pink border border-pink-200 rounded-lg">23</div>
+                    <div class="p-1 text-gray-600">24</div><div class="p-1 text-gray-600">25</div><div class="p-1 text-gray-600">26</div><div class="p-1 text-gray-600">27</div><div class="p-1 text-gray-600">28</div><div class="p-1 text-gray-600">29</div><div class="p-1 text-gray-600">30</div>
+                </div>
+            </div>
+            <div class="relative mb-4"><input type="text" id="searchQueueInput" onkeyup="renderQueueModalList()" placeholder="ค้นหารหัสคิว (เช่น Q123) หรือชื่อ" class="w-full bg-white border border-pink-100 rounded-2xl px-4 py-3 text-xs focus:outline-none focus:border-main-pink text-center font-bold shadow-sm"></div>
+            <div id="queueModalListContainer" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Modal ตรวจสอบตัวแทน (สำหรับลูกค้า) -->
+    <div id="publicAgentCheckModal" class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-[#fffdf6] rounded-3xl w-full max-w-sm p-6 transform translate-y-10 transition-transform duration-300 scale-95 relative shadow-xl" id="publicAgentCheckModalContent">
+            <button onclick="closePublicAgentCheck()" class="absolute top-4 right-4 w-8 h-8 bg-white shadow-sm rounded-full text-gray-400 z-10">✕</button>
+            <div class="w-12 h-12 bg-pink-100 border border-pink-200 rounded-full flex items-center justify-center text-2xl mb-3 shadow-sm mx-auto">🔍</div>
+            <h2 class="text-dark-pink font-bold text-lg text-center mb-1">ตรวจสอบตัวแทน</h2>
+            <p class="text-[10px] text-gray-500 text-center mb-4">ลูกค้าสามารถพิมพ์รหัสตัวแทน<br>เพื่อตรวจสอบประวัติและยืนยันตัวตนได้ค่ะ</p>
+            <div class="space-y-2 mb-4 mt-2">
+                <input type="text" id="publicAgentInputCode" placeholder="จงเขียนรหัสตัวแทน เช่น 00A" class="w-full bg-white border border-pink-100 rounded-2xl px-4 py-3 text-xs text-center font-bold text-gray-600 outline-none">
+            </div>
+            <button onclick="verifyPublicAgent()" class="w-full bg-main-pink text-white font-bold py-3 rounded-2xl text-xs shadow-sm active:scale-95">ตรวจสอบประวัติ</button>
+            <div id="publicAgentResultContainer" class="mt-4 hidden space-y-2 max-h-[50vh] overflow-y-auto hide-scroll pb-4"></div>
+        </div>
+    </div>
+
+    <!-- 3. Modal เช็คลูกค้าของตัวแทน & โอนเงิน -->
+    <div id="agentCheckModal" class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-[#fffdf6] rounded-3xl w-full max-w-sm p-6 transform translate-y-10 transition-transform duration-300 scale-95 relative shadow-xl" id="agentCheckModalContent">
+            <button onclick="closeAgentCheckModal()" class="absolute top-4 right-4 w-8 h-8 bg-white shadow-sm rounded-full text-gray-400 z-10">✕</button>
+            <div class="w-12 h-12 bg-pink-100 border border-pink-200 rounded-full flex items-center justify-center text-2xl mb-3 shadow-sm mx-auto">🕵️‍♀️</div>
+            <h2 class="text-dark-pink font-bold text-lg text-center mb-1">ระบบตัวแทน (แจ้งโอนร้าน)</h2>
+            <p class="text-[10px] text-gray-500 text-center mb-4">หักค่าคอมตัวเอง แล้วโอนส่วนที่เหลือให้ทางร้าน</p>
+            <div class="space-y-2 mb-4 mt-2">
+                <input type="password" id="agentInputCode" placeholder="จงเขียนรหัสตัวแทน เช่น 00A" class="w-full bg-white border border-pink-100 rounded-2xl px-4 py-3 text-xs text-center font-bold text-gray-600 outline-none">
+                <input type="text" id="agentInputQueue" placeholder="รหัสคิวลูกค้า (เว้นว่างเพื่อดูแค่โปรไฟล์)" class="w-full bg-white border border-pink-100 rounded-2xl px-4 py-3 text-xs text-center font-bold text-gray-600 outline-none">
+            </div>
+            <button onclick="checkAgentCustomer()" class="w-full bg-[#f09eb3] text-white font-bold py-3 rounded-2xl text-xs shadow-sm active:scale-95">ตรวจสอบยอดโอน & คิว</button>
+            <div id="agentResultContainer" class="mt-4 hidden space-y-2 max-h-[50vh] overflow-y-auto hide-scroll pb-4"></div>
+        </div>
+    </div>
+
+    <!-- 🌟 Modal ใหม่: ช่องทางชำระเงินสำหรับตัวแทน พร้อมระบบตรวจสอบสลิป -->
+    <div id="paymentModal" class="fixed inset-0 bg-black/70 z-[90] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-xs p-6 transform scale-95 transition-transform duration-300 relative shadow-2xl max-h-[90vh] overflow-y-auto hide-scroll" id="paymentModalContent">
+            <button onclick="closePaymentModal()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full text-gray-500">✕</button>
+            <h2 class="font-bold text-dark-pink text-lg mb-1">💸 โอนเงินให้ร้าน</h2>
+            <p class="text-[11px] text-gray-500 mb-3" id="payRoundText">รอบชำระ: มัดจำ</p>
+            
+            <div class="bg-pink-50 p-3 rounded-xl border border-pink-100 mb-4 text-center">
+                <p class="text-xs text-gray-600">ยอดสุทธิที่ต้องโอนให้ร้าน</p>
+                <p class="text-2xl font-bold text-main-pink" id="payAmountText">0 ฿</p>
+            </div>
+
+            <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl text-xs font-bold">
+                <button id="btnPayBank" onclick="switchPay('bank')" class="flex-1 py-2 rounded-lg bg-white shadow-sm text-blue-600 transition">🏦 ธนาคาร</button>
+                <button id="btnPayWallet" onclick="switchPay('wallet')" class="flex-1 py-2 rounded-lg text-gray-500 transition">📱 ทรูมันนี่</button>
+            </div>
+
+            <div id="qrBank" class="text-center py-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+                <div class="w-32 h-32 bg-white border border-gray-300 mx-auto mb-2 flex items-center justify-center">
+                    <span class="text-4xl text-gray-300">QR</span>
+                </div>
+                <p class="text-[10px] text-gray-500 font-bold">กสิกรไทย 012-3-45678-9<br>ชื่อบัญชี: กชกร</p>
+            </div>
+
+            <div id="qrWallet" class="text-center py-4 bg-orange-50 rounded-xl border border-orange-200 mb-4 hidden">
+                <div class="w-32 h-32 bg-white border border-orange-300 mx-auto mb-2 flex items-center justify-center">
+                    <span class="text-4xl text-orange-300">QR</span>
+                </div>
+                <p class="text-[10px] text-orange-600 font-bold">TrueMoney Wallet<br>เบอร์โทร: 081-234-5678<br>ชื่อบัญชี: กชกร</p>
+            </div>
+
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 mb-3">
+                <label class="block text-[10px] font-bold text-red-600 mb-1">⚠️ โปรดระบุชื่อบัญชีผู้รับโอนปลายทางตามสลิป</label>
+                <input type="text" id="payReceiverName" placeholder="เช่น กชกร" class="w-full text-xs border border-red-200 rounded-lg p-2 bg-white outline-none focus:border-red-400">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-1">อัปโหลดสลิปยืนยันการโอน *</label>
+                <input type="file" id="paySlipFile" accept="image/*" onchange="encodeSlipFile(this)" class="w-full text-[10px] border border-gray-200 rounded-lg p-2 mb-3 bg-gray-50">
+                <input type="hidden" id="paySlipBase64">
+            </div>
+            
+            <button onclick="submitAgentPayment()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-xl active:scale-95 transition shadow-md">ยืนยันการโอนเงิน</button>
+        </div>
+    </div>
+
+    <!-- 4. Modal รหัสลับ -->
+    <div id="securityModal" class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-xs p-6 transform scale-95 transition-transform duration-300 text-center relative shadow-xl" id="securityModalContent">
+            <button onclick="closeSecurityModal()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full text-gray-500">✕</button>
+            <div class="text-4xl mb-2">🔒</div>
+            <h2 class="font-bold text-gray-700 mb-4" id="securityTitle">ระบบยืนยันตัวตน</h2>
+            <input type="password" id="securityPasscode" onkeydown="if(event.key === 'Enter') verifyPasscode()" placeholder="กรอกรหัส..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-center tracking-[0.5em] font-bold outline-none mb-3">
+            <button id="securitySubmitBtn" class="w-full bg-gray-800 text-white font-bold py-3 rounded-xl active:scale-95">ตกลง</button>
+        </div>
+    </div>
+
+    <!-- 5. ⚙️ ระบบหลังบ้าน (Admin Panel) -->
+    <div id="adminPanelModal" class="fixed inset-0 bg-gray-50 z-[80] opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-800 to-gray-600 p-4 text-white flex justify-between items-center shadow-md">
+            <div><h1 class="font-bold text-lg">⚙️ Admin Panel</h1></div>
+            <button onclick="closeAdminPanel()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center font-bold">✕</button>
+        </div>
+        <div class="flex bg-white shadow-sm text-xs font-bold text-gray-500 overflow-x-auto hide-scroll">
+            <button onclick="switchAdminTab('queues')" id="tab_queues" class="px-4 py-3 text-gray-800 border-b-2 border-gray-800 whitespace-nowrap">📋 คิว/ออเดอร์</button>
+            <button onclick="switchAdminTab('slips')" id="tab_slips" class="px-4 py-3 border-b-2 border-transparent whitespace-nowrap">🧾 ตรวจสลิป</button>
+            <button onclick="switchAdminTab('agents')" id="tab_agents" class="px-4 py-3 border-b-2 border-transparent whitespace-nowrap">🕵️ ตัวแทน</button>
+            <button onclick="switchAdminTab('db')" id="tab_db" class="px-4 py-3 border-b-2 border-transparent text-red-400 whitespace-nowrap">🗑️ รีเซ็ต</button>
+        </div>
+        <div class="flex-1 p-4 overflow-y-auto pb-10">
+            <div id="admin_content_queues" class="space-y-3"><div id="adminQueueList" class="space-y-3"></div></div>
+            
+            <div id="admin_content_slips" class="hidden space-y-3"></div>
+
+            <div id="admin_content_agents" class="hidden space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200"><h3 class="font-bold text-sm mb-3">➕ เพิ่มตัวแทน</h3><div class="space-y-2 text-xs"><div class="flex gap-2"><input type="text" id="newAgCode" placeholder="จงเขียนรหัสตัวแทน เช่น 00A" class="w-1/3 bg-gray-50 rounded-xl px-3 py-2 outline-none"><input type="text" id="newAgName" placeholder="ชื่อตัวแทน" class="w-2/3 bg-gray-50 rounded-xl px-3 py-2 outline-none"></div><input type="text" id="newAgPic" placeholder="ลิงก์รูปโปรไฟล์ (URL) *เว้นว่างได้*" class="w-full bg-gray-50 rounded-xl px-3 py-2 outline-none"><input type="text" id="newAgFb" placeholder="ลิงก์ Facebook / ช่องทางติดต่อ" class="w-full bg-gray-50 rounded-xl px-3 py-2 outline-none"><div class="flex items-center gap-2"><select id="newAgStatus" class="flex-1 bg-gray-50 rounded-xl px-2 py-2 outline-none font-bold text-gray-700"><option value="Official">✅ เป็นตัวแทนแล้ว</option><option value="Probation">⏳ ทดลองงาน</option></select><div class="flex items-center gap-1"><span>เรทคอม:</span><input type="number" id="newAgRate" value="30" class="w-12 bg-gray-50 rounded-xl px-1 py-2 text-center font-bold outline-none"><span>%</span></div></div><button onclick="adminAddAgent()" class="w-full bg-gray-800 text-white font-bold py-2.5 rounded-xl mt-1 active:scale-95">บันทึกตัวแทน</button></div></div>
+                <div id="adminAgentList" class="space-y-2"></div>
+            </div>
+            <div id="admin_content_db" class="hidden text-center py-6 space-y-3">
+                <p class="text-xs text-gray-500 mb-2">เลือกลบข้อมูลเฉพาะส่วนที่ต้องการ</p>
+                <button onclick="resetCustomDB('orders')" class="w-full bg-orange-100 text-orange-600 font-bold py-3 rounded-xl text-sm border border-orange-200 active:scale-95">ล้างข้อมูล "คิวและออเดอร์" ทั้งหมด</button>
+                <button onclick="resetCustomDB('agents')" class="w-full bg-blue-100 text-blue-600 font-bold py-3 rounded-xl text-sm border border-blue-200 active:scale-95">ล้างข้อมูล "รายชื่อตัวแทน" ทั้งหมด</button><div class="border-b border-dashed border-gray-300 my-4"></div>
+                <button onclick="resetCustomDB('all')" class="w-full bg-red-500 text-white font-bold py-3 rounded-xl text-sm shadow-md active:scale-95">🗑️ ล้างข้อมูลทั้งหมดในระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Edit Modal -->
+    <div id="adminEditQueueModal" class="fixed inset-0 bg-black/60 z-[90] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-5 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto hide-scroll" id="adminEditQueueModalContent">
+            <h2 class="text-gray-800 font-bold text-lg mb-3 border-b pb-2">อัปเดตงาน: <span id="editQ_id" class="text-gray-500"></span></h2>
+            <div class="space-y-3 text-xs">
+                <div><label class="block font-bold text-gray-600 mb-1">สถานะปัจจุบัน</label><input type="text" id="editQ_status" class="w-full bg-gray-50 rounded-xl px-3 py-2"></div>
+                <div class="flex gap-2"><div class="flex-1"><label class="block font-bold mb-1">ความคืบหน้า (%)</label><input type="number" id="editQ_progress" class="w-full bg-gray-50 rounded-xl px-3 py-2 text-center font-bold"></div><div class="flex-1"><label class="block font-bold mb-1">ผู้รับงาน (แอดมิน)</label><input type="text" id="editQ_worker" class="w-full bg-gray-50 rounded-xl px-3 py-2"></div></div>
+                
+                <div class="border-t border-dashed border-gray-200 pt-3 mt-3">
+                    <p class="font-bold text-green-600 mb-2">💰 การโอนเงินจากตัวแทนให้ร้าน</p>
+                    <div class="bg-green-50 p-2 rounded-lg mb-3">
+                        <label class="flex items-center gap-2 cursor-pointer bg-white p-1.5 rounded-md border border-green-100">
+                            <input type="checkbox" id="editQ_commPaid1" class="w-4 h-4 text-green-500">
+                            <span class="font-bold text-gray-700 text-[10px]">มัดจำ: <span class="text-green-600">ตรวจสอบแล้ว/โอนเข้าเว็บแล้ว ✅</span></span>
+                        </label>
+                    </div>
+                    
+                    <label class="block font-bold text-gray-600 mb-1">บวกเพิ่มค่าส่วนต่าง (ถ้ามี)</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="editQ_extraReason" placeholder="เหตุผล (เช่น โค้ดเกิน 400)" class="flex-1 bg-white rounded-xl px-3 py-2 outline-none border border-gray-200 text-xs">
+                        <input type="number" id="editQ_extraPrice" placeholder="ยอดเงิน ฿" class="w-24 bg-white rounded-xl px-3 py-2 outline-none border border-gray-200 font-bold text-green-700 text-xs text-center">
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded-lg">
+                        <label class="flex items-center gap-2 cursor-pointer bg-white p-1.5 rounded-md border border-orange-100">
+                            <input type="checkbox" id="editQ_commPaid2" class="w-4 h-4 text-orange-500">
+                            <span class="font-bold text-gray-700 text-[10px]">ส่วนต่าง: <span class="text-orange-500">ตรวจสอบแล้ว/โอนเข้าเว็บแล้ว ✅</span></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4"><button onclick="closeAdminEditQueue()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl">ยกเลิก</button><button onclick="saveAdminEditQueue()" class="flex-1 bg-gray-800 text-white font-bold py-3 rounded-xl">บันทึกข้อมูล</button></div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let db;
+        try { db = JSON.parse(localStorage.getItem('myShopDB')); } catch(e) { db = null; }
+        
+        if(!db) {
+            db = {
+                orders: [{ id: 'Q123', customer: 'น้องเอ', contact: 'Line: @aaa', agent: '00A', style: 'พาสเทล', brief: '-', items: {main:1, addon1:0, addon2:0, addon3:0}, total: 129, extraLinePrice: 0, extraLineReason: '', agentPaid1: false, agentPaid2: false, status: 'กำลังลงโค้ด 💻', progress: 75, worker: 'แอดมินจิ๋ว', date: '22 เม.ย.', fullBrief: {customLinks:[]} }],
+                agents: [{ code: '00A', name: 'คุณบี', contact: '-', fb: 'https://facebook.com/บีบี', pic: 'https://ui-avatars.com/api/?name=B&background=f28fab&color=fff', rate: 30, status: 'Official' }]
+            };
+            saveDB();
+        }
+        function saveDB() { localStorage.setItem('myShopDB', JSON.stringify(db)); renderAllDynamicUI(); }
+        
+        function resetCustomDB(type) {
+            if(type === 'orders') { if(confirm("ยืนยันการลบ 'คิวและออเดอร์' ทั้งหมด?")) { db.orders = []; saveDB(); alert('ล้างคิวงานเรียบร้อย'); } }
+            else if(type === 'agents') { if(confirm("ยืนยันการลบ 'ตัวแทน' ทั้งหมด?")) { db.agents = []; saveDB(); alert('ล้างรายชื่อตัวแทนเรียบร้อย'); } }
+            else if(type === 'all') { if(confirm("ล้างข้อมูลทั้งหมดในระบบ? ข้อมูลจะหายถาวร!")) { localStorage.removeItem('myShopDB'); location.reload(); } }
+        }
+
+        let targetSystem = '';
+        function checkSecurity(target) {
+            targetSystem = target; document.getElementById('securityPasscode').value = '';
+            document.getElementById('securityTitle').innerText = target === 'admin' ? 'เข้าสู่ระบบหลังบ้าน' : 'เข้าสู่ระบบตัวแทน';
+            document.getElementById('securityModal').classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => document.getElementById('securityModalContent').classList.remove('scale-95'), 10);
+            document.getElementById('securitySubmitBtn').onclick = () => verifyPasscode();
+        }
+        function closeSecurityModal() { document.getElementById('securityModalContent').classList.add('scale-95'); setTimeout(() => document.getElementById('securityModal').classList.add('opacity-0', 'pointer-events-none'), 300); }
+        function verifyPasscode() {
+            const pass = document.getElementById('securityPasscode').value;
+            if (targetSystem === 'admin' && pass === '225511') { closeSecurityModal(); setTimeout(openAdminPanel, 300); }
+            else if (targetSystem === 'agent' && pass === '2255') { closeSecurityModal(); setTimeout(openAgentCheckModal, 300); }
+            else { alert('รหัสไม่ถูกต้อง ❌'); document.getElementById('securityPasscode').value = ''; }
+        }
+
+        const prices = { main: 129, addon1: 150, addon2: 29, addon3: 99 };
+        let qtys = { main: 1, addon1: 0, addon2: 0, addon3: 0 }; 
+
+        const draftFields = [
+            'draft_shopName', 'draft_slogan', 'draft_contact', 'draft_agent', 
+            'draft_services', 'draft_conditions', 'draft_orderSteps', 'draft_shopRules',
+            'draft_template', 'draft_colorSimple', 'draft_colorCustom', 'draft_themeCustom', 
+            'draft_logoLink', 'draft_designChoice', 'draft_customDesignLink', 'draft_extraFunctions', 'draft_brief'
+        ];
+
+        function encodeSlipFile(element) {
+            var file = element.files[0];
+            var reader = new FileReader();
+            reader.onloadend = function() { document.getElementById('paySlipBase64').value = reader.result; }
+            if(file) reader.readAsDataURL(file);
+        }
+
+        function addLinkField() {
+            const container = document.getElementById('dynamicLinksContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-1 link-item mt-1';
+            div.innerHTML = `
+                <input type="text" placeholder="ชื่อลิงก์" class="w-1/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 focus:border-main-pink text-[10px] link-title">
+                <input type="url" placeholder="URL ลิงก์สาธารณะ" class="w-2/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 focus:border-main-pink text-[10px] link-url">
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 font-bold px-2">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function verifyAgentInForm() {
+            const code = document.getElementById('draft_agent').value.trim();
+            const card = document.getElementById('formAgentCard');
+            if(!code) { card.classList.add('hidden'); return; }
+            const agent = db.agents.find(a => a.code === code);
+            if(agent) {
+                card.classList.remove('hidden');
+                let badge = agent.status === 'Probation' ? '⏳ ทดลองงาน' : '✅ ตัวแทน';
+                card.innerHTML = `<div class="flex items-center gap-3"><img src="${agent.pic}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm"><div><p class="font-bold text-dark-pink text-xs">${agent.name}</p><p class="text-[9px] text-gray-500">${badge}</p></div></div>`;
+            } else {
+                card.classList.remove('hidden');
+                card.innerHTML = `<p class="text-red-500 text-[10px] font-bold text-center py-1">❌ ไม่พบรหัสตัวแทนนี้</p>`;
+            }
+        }
+
+        function safeSet(id, val) { let el = document.getElementById(id); if (el) el.innerText = val; }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            draftFields.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.value = localStorage.getItem(id) || ''; el.addEventListener('input', () => localStorage.setItem(id, el.value)); }
+            });
+            if(document.getElementById('draft_designChoice')) toggleDesignLinkInput();
+            const savedQtys = localStorage.getItem('draft_qtys');
+            if(savedQtys) { try { qtys = JSON.parse(savedQtys); ['main','addon1','addon2','addon3'].forEach(k => { if(document.getElementById(`qty_${k}`)) document.getElementById(`qty_${k}`).innerText = qtys[k]; }); } catch(e){} }
+            calculateTotal(); renderAllDynamicUI();
+            verifyAgentInForm();
+        });
+
+        function updateQty(item, change) {
+            let newQty = qtys[item] + change;
+            if (item === 'main' && newQty < 1) newQty = 1;
+            if (newQty < 0) newQty = 0;
+            qtys[item] = newQty;
+            document.getElementById('qty_' + item).innerText = newQty;
+            localStorage.setItem('draft_qtys', JSON.stringify(qtys));
+            calculateTotal();
+        }
+        function calculateTotal() {
+            let total = Object.keys(qtys).reduce((sum, key) => sum + (qtys[key] * prices[key]), 0);
+            if(document.getElementById('modalDepositTotal')) document.getElementById('modalDepositTotal').innerText = total + ' ฿';
+            if(document.getElementById('sumDepositTotal')) document.getElementById('sumDepositTotal').innerText = total + ' ฿';
+            return total;
+        }
+
+        function toggleMenu() { 
+            const m = document.getElementById('sideMenu'), o = document.getElementById('sideMenuOverlay'); 
+            if(m.classList.contains('translate-x-full')) { m.classList.remove('translate-x-full'); o.classList.remove('opacity-0', 'pointer-events-none'); } 
+            else { m.classList.add('translate-x-full'); o.classList.add('opacity-0', 'pointer-events-none'); } 
+        }
+
+        function toggleOrderModal() {
+            const m = document.getElementById('orderModal'), c = document.getElementById('orderModalContent');
+            if(m.classList.contains('opacity-0')) {
+                
+                if(qtys.addon1 > 0) {
+                    document.getElementById('standardDesignFields').classList.add('hidden');
+                    document.getElementById('customDesignFields').classList.remove('hidden');
+                } else {
+                    document.getElementById('standardDesignFields').classList.remove('hidden');
+                    document.getElementById('customDesignFields').classList.add('hidden');
+                }
+                if(qtys.addon3 > 0) {
+                    document.getElementById('extraFuncContainer').classList.remove('hidden');
+                } else {
+                    document.getElementById('extraFuncContainer').classList.add('hidden');
+                }
+
+                document.getElementById('step1Form').classList.remove('hidden');
+                document.getElementById('step2Summary').classList.add('hidden');
+                document.getElementById('step3Success').classList.add('hidden');
+                m.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => c.classList.remove('translate-y-10', 'scale-95'), 10);
+            } else {
+                c.classList.add('translate-y-10', 'scale-95'); setTimeout(() => m.classList.add('opacity-0', 'pointer-events-none'), 300);
+            }
+        }
+
+        function showOrderSummary() {
+            safeSet('sum_shopName', document.getElementById('draft_shopName')?.value);
+            safeSet('sum_slogan', document.getElementById('draft_slogan')?.value);
+            safeSet('sum_contact', document.getElementById('draft_contact')?.value);
+            safeSet('sum_agent', document.getElementById('draft_agent')?.value.trim() || 'ไม่มี');
+            
+            safeSet('sum_services', document.getElementById('draft_services')?.value);
+            safeSet('sum_conditions', document.getElementById('draft_conditions')?.value);
+            safeSet('sum_orderSteps', document.getElementById('draft_orderSteps')?.value);
+            safeSet('sum_shopRules', document.getElementById('draft_shopRules')?.value);
+
+            const isCustom = qtys.addon1 > 0;
+            const finalStyle = isCustom ? document.getElementById('draft_colorCustom')?.value : document.getElementById('draft_colorSimple')?.value;
+            const finalRef = isCustom ? document.getElementById('draft_themeCustom')?.value : document.getElementById('draft_template')?.value;
+
+            safeSet('sum_style', finalStyle);
+            safeSet('sum_refWork', finalRef);
+            
+            safeSet('sum_logoLink', document.getElementById('draft_logoLink')?.value);
+            
+            const designChoice = document.getElementById('draft_designChoice')?.value || '';
+            const designLink = document.getElementById('draft_customDesignLink')?.value || '';
+            let designText = designChoice || '-';
+            if (isCustom && designChoice === 'มีแบบร่างมาให้ทำ' && designLink) { designText += ` (${designLink})`; }
+            else if (!isCustom) { designText = 'ใช้เทมเพลตจากร้าน'; }
+            safeSet('sum_customDesignLink', designText);
+            
+            safeSet('sum_extraFunctions', document.getElementById('draft_extraFunctions')?.value);
+            safeSet('sum_brief', document.getElementById('draft_brief')?.value);
+
+            document.getElementById('step1Form').classList.add('hidden'); 
+            document.getElementById('step2Summary').classList.remove('hidden');
+        }
+
+        function toggleDesignLinkInput() {
+            const choiceEl = document.getElementById('draft_designChoice');
+            const container = document.getElementById('designLinkInputContainer');
+            if(choiceEl && container) {
+                if(choiceEl.value === 'มีแบบร่างมาให้ทำ') { container.classList.remove('hidden'); } 
+                else { container.classList.add('hidden'); }
+            }
+        }
+
+        function editOrder() { document.getElementById('step1Form').classList.remove('hidden'); document.getElementById('step2Summary').classList.add('hidden'); }
+
+        function confirmFinalOrder() {
+            document.getElementById('step2Summary').classList.add('hidden');
+            document.getElementById('step3Success').classList.remove('hidden');
+            const queueNum = 'Q' + (Math.floor(Math.random() * 900) + 100);
+            const shopName = document.getElementById('draft_shopName')?.value || '-';
+            const agentCode = document.getElementById('draft_agent')?.value || 'สั่งตรง';
+            const total = calculateTotal();
+            const dateStr = new Date().toLocaleDateString('th-TH', { month: 'short', day: 'numeric', year: '2-digit' });
+
+            const fullBriefData = {};
+            draftFields.forEach(id => { 
+                const el = document.getElementById(id);
+                fullBriefData[id.replace('draft_', '')] = (el ? el.value : '') || '-'; 
+            });
+
+            const isCustom = qtys.addon1 > 0;
+            const finalStyle = isCustom ? (document.getElementById('draft_colorCustom')?.value || '-') : (document.getElementById('draft_colorSimple')?.value || '-');
+            const finalRef = isCustom ? (document.getElementById('draft_themeCustom')?.value || '-') : (document.getElementById('draft_template')?.value || '-');
+            
+            fullBriefData.style = finalStyle;
+            fullBriefData.refWork = finalRef;
+            if(!isCustom) fullBriefData.designChoice = 'ใช้เทมเพลตจากทางร้าน';
+
+            const links = [];
+            document.querySelectorAll('.link-item').forEach(item => {
+                const title = item.querySelector('.link-title').value.trim();
+                const url = item.querySelector('.link-url').value.trim();
+                if(url) links.push({title: title || 'ลิงก์ผลงาน', url});
+            });
+            fullBriefData.customLinks = links;
+
+            const newOrder = {
+                id: queueNum, customer: shopName, contact: document.getElementById('draft_contact')?.value || '-', agent: agentCode,
+                style: finalStyle, brief: document.getElementById('draft_brief')?.value || '-',
+                fullBrief: fullBriefData, 
+                items: { ...qtys }, total: total, extraLinePrice: 0, extraLineReason: '', agentPaid1: false, agentPaid2: false, slip1Base64: '', slip2Base64: '',
+                status: 'รอรับงาน ⏳', progress: 10, worker: '-', date: dateStr, created: Date.now()
+            };
+            db.orders.push(newOrder); saveDB();
+
+            document.getElementById('slipQueueId').innerText = queueNum;
+            document.getElementById('slipDate').innerText = dateStr;
+            document.getElementById('slipShopName').innerText = shopName;
+            document.getElementById('slipAgent').innerText = agentCode;
+            document.getElementById('slipTotal').innerText = total + ' ฿';
+            document.getElementById('slipBarcodeNum').innerText = Date.now().toString().slice(-10);
+
+            let itemsHtml = '';
+            if(qtys.main > 0) itemsHtml += `<div class="flex justify-between border-b border-gray-400 border-dashed pb-1 mb-1"><span>WEB [1] x${qtys.main}</span><span>${qtys.main * prices.main}</span></div>`;
+            if(qtys.addon1 > 0) itemsHtml += `<div class="flex justify-between border-b border-gray-400 border-dashed pb-1 mb-1"><span>DESIGN x${qtys.addon1}</span><span>${qtys.addon1 * prices.addon1}</span></div>`;
+            if(qtys.addon2 > 0) itemsHtml += `<div class="flex justify-between border-b border-gray-400 border-dashed pb-1 mb-1"><span>BANNER x${qtys.addon2}</span><span>${qtys.addon2 * prices.addon2}</span></div>`;
+            if(qtys.addon3 > 0) itemsHtml += `<div class="flex justify-between border-b border-gray-400 border-dashed pb-1 mb-1"><span>FUNCT. x${qtys.addon3}</span><span>${qtys.addon3 * prices.addon3}</span></div>`;
+            document.getElementById('slipItemsList').innerHTML = itemsHtml;
+
+            setTimeout(() => {
+                html2canvas(document.getElementById('slipCaptureArea'), { backgroundColor: null, scale: 2 }).then(canvas => {
+                    const link = document.createElement('a'); link.download = `Receipt_${queueNum}.png`; link.href = canvas.toDataURL("image/png"); link.click();
+                });
+            }, 500);
+
+            const chatMsg = `🤖 (บิลอัตโนมัติ)\n✨ สรุปรายการสั่งทำ ✨\n📌 รหัสคิว: ${queueNum}\n👤 ลูกค้า: ${shopName}\n💰 ยอดรวมมัดจำ: ${total} ฿\n\n👉 โอนเงินแล้วแนบสลิปยืนยันในแชทนี้ได้เลยค่า 💖`;
+            navigator.clipboard.writeText(chatMsg).catch(e=>{});
+
+            draftFields.forEach(id => { localStorage.removeItem(id); const el = document.getElementById(id); if(el) el.value=''; });
+            document.getElementById('dynamicLinksContainer').innerHTML = '<div class="flex gap-1 link-item"><input type="text" placeholder="ชื่อลิงก์" class="w-1/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 text-[10px] link-title"><input type="url" placeholder="URL ลิงก์สาธารณะ" class="w-2/3 bg-soft-cream rounded-lg px-2 py-2 outline-none border border-pink-50 text-[10px] link-url"></div>';
+            localStorage.removeItem('draft_qtys'); qtys = { main: 1, addon1: 0, addon2: 0, addon3: 0 }; calculateTotal();
+        }
+
+        function renderAllDynamicUI() {
+            const mainContainer = document.getElementById('mainPageQueueContainer');
+            if(mainContainer) {
+                if(db.orders.length===0) mainContainer.innerHTML = '<p class="text-xs text-gray-400 text-center py-2">ยังไม่มีคิว</p>';
+                else {
+                    const recentOrders = [...db.orders].reverse().slice(0,2);
+                    let html = '';
+                    recentOrders.forEach((o, i) => {
+                        if(i === 0) {
+                            html += `
+                            <div class="flex items-center gap-3">
+                                <div class="w-14 h-14 shrink-0 bg-main-pink text-white rounded-full flex flex-col items-center justify-center text-[10px] font-bold shadow-md border-2 border-white z-10"><span>คิว</span><span>${o.id}</span></div>
+                                <div class="flex-1 bg-card-white rounded-2xl h-16 shadow-sm border border-white flex flex-col justify-center px-4 relative -ml-6 pl-8">
+                                    <div class="flex justify-between text-[11px] font-bold text-dark-pink mb-1.5"><span>${o.status}</span><span class="bg-pink-100 text-main-pink px-1.5 rounded text-[9px]">${o.progress}%</span></div>
+                                    <progress value="${o.progress}" max="100" class="w-full h-2"></progress>
+                                </div>
+                                <div class="w-14 h-16 shrink-0 bg-soft-cream rounded-xl shadow-sm border border-white flex flex-col items-center justify-center text-[9px] font-medium text-center text-dark-pink hover:bg-pink-50 transition"><div class="w-6 h-6 bg-gray-800 text-white rounded-md flex items-center justify-center mb-1">💻</div>กำลัง<br>ทำออเดอร์</div>
+                            </div>`;
+                        } else if(i === 1) {
+                            html += `
+                            <div class="flex items-center gap-3 opacity-80 mt-3">
+                                <div class="w-14 h-16 shrink-0 bg-card-white rounded-xl shadow-sm border border-white flex flex-col items-center justify-center text-[9px] font-medium text-center text-blue-500"><span class="text-lg mb-0.5 font-bold tracking-widest text-blue-600">zZ<sup>Z</sup></span>รอคิว<br>ต่อไป</div>
+                                <div class="flex-1 bg-card-white rounded-2xl h-16 shadow-sm border border-white flex flex-col justify-center px-4 relative -mr-6 pr-8">
+                                    <div class="flex justify-between text-[11px] font-bold text-dark-pink mb-1.5 flex-row-reverse"><span>${o.status}</span><span class="bg-orange-100 text-orange-400 px-1.5 rounded text-[9px]">${o.progress}%</span></div>
+                                    <div class="w-full bg-[#ffe8f0] rounded-full h-2 flex justify-end"><div class="bg-main-pink h-2 rounded-full" style="width: ${o.progress}%"></div></div>
+                                </div>
+                                <div class="w-14 h-14 shrink-0 bg-white text-dark-pink rounded-full flex flex-col items-center justify-center text-[10px] font-bold shadow-md border-2 border-pink-100 z-10"><span>คิว</span><span>${o.id}</span></div>
+                            </div>`;
+                        }
+                    });
+                    mainContainer.innerHTML = html;
+                }
+            }
+            renderQueueModalList();
+            renderAdminQueues(); renderAdminAgents(); renderAdminSlips();
+        }
+
+        function toggleQueueCalendarModal() {
+            const m = document.getElementById('queueCalendarModal'), c = document.getElementById('queueCalendarModalContent');
+            if(m.classList.contains('opacity-0')) { m.classList.remove('opacity-0', 'pointer-events-none'); setTimeout(() => c.classList.remove('translate-y-10', 'scale-95'), 10); } 
+            else { c.classList.add('translate-y-10', 'scale-95'); setTimeout(() => m.classList.add('opacity-0', 'pointer-events-none'), 300); }
+        }
+        
+        function renderQueueModalList() {
+            const container = document.getElementById('queueModalListContainer'), search = document.getElementById('searchQueueInput')?.value.toLowerCase() || '';
+            const filtered = db.orders.filter(o => o.id.toLowerCase().includes(search) || o.customer.toLowerCase().includes(search)).reverse();
+            if(filtered.length===0) { container.innerHTML = '<p class="text-xs text-center py-4">ไม่พบข้อมูล</p>'; return; }
+            
+            container.innerHTML = filtered.map(o => {
+                let extraHtml = '';
+                if(o.extraLinePrice > 0) {
+                    extraHtml = `
+                    <div class="col-span-2 bg-orange-50 p-2 rounded-lg border border-orange-100 mt-1">
+                        <div class="flex justify-between text-[10px] text-orange-700"><span><b>ส่วนต่าง:</b> ${o.extraLineReason || 'เพิ่มเติม'}</span><span class="font-bold">+${o.extraLinePrice} ฿</span></div>
+                        <div class="flex justify-between text-[11px] text-dark-pink font-bold mt-1 pt-1 border-t border-orange-200"><span>ยอดชำระสุทธิ (รวมมัดจำ):</span><span>${o.total + o.extraLinePrice} ฿</span></div>
+                    </div>`;
+                }
+
+                return `
+                <div class="bg-white border border-pink-100 rounded-2xl p-4 shadow-sm relative">
+                    <div class="flex gap-3 border-b border-pink-50 pb-3 mb-2"><div class="w-12 h-12 bg-main-pink text-white rounded-full flex items-center justify-center font-bold">${o.id}</div><div><div class="font-bold text-sm">${o.customer}</div><div class="text-[10px] text-gray-500">ผู้รับงาน: ${o.worker}</div></div></div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px] text-gray-600 mb-3"><div class="bg-soft-cream p-1.5 rounded-lg border border-pink-50"><span class="text-main-pink font-bold">อัปเดต:</span> ${o.date}</div><div class="bg-soft-cream p-1.5 rounded-lg border border-pink-50"><span class="text-main-pink font-bold">มัดจำ:</span> ${o.total} ฿</div>${extraHtml}</div>
+                    <div class="flex justify-between text-[11px] font-bold text-dark-pink mb-1"><span>${o.status}</span><span>${o.progress}%</span></div><progress value="${o.progress}" max="100" class="w-full h-1.5"></progress>
+                </div>`;
+            }).join('');
+        }
+
+        function openPublicAgentCheck() {
+            const m = document.getElementById('publicAgentCheckModal');
+            const c = document.getElementById('publicAgentCheckModalContent');
+            document.getElementById('publicAgentInputCode').value = '';
+            document.getElementById('publicAgentResultContainer').classList.add('hidden');
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => c.classList.remove('translate-y-10', 'scale-95'), 10);
+        }
+        function closePublicAgentCheck() {
+            document.getElementById('publicAgentCheckModalContent').classList.add('translate-y-10', 'scale-95');
+            setTimeout(() => document.getElementById('publicAgentCheckModal').classList.add('opacity-0', 'pointer-events-none'), 300);
+        }
+
+        function verifyPublicAgent() {
+            const code = document.getElementById('publicAgentInputCode').value.trim();
+            const cont = document.getElementById('publicAgentResultContainer');
+            cont.classList.remove('hidden');
+            if(!code) { cont.innerHTML = `<div class="bg-red-50 p-3 rounded-xl"><b class="text-red-600 text-xs">❌ โปรดระบุรหัสตัวแทนที่ต้องการตรวจสอบ</b></div>`; return; }
+            
+            const agent = db.agents.find(a => a.code === code);
+            if(!agent) { cont.innerHTML = `<div class="bg-red-50 p-3 rounded-xl text-center"><p class="text-3xl mb-1">⚠️</p><b class="text-red-600 text-xs">ไม่พบข้อมูลในระบบ!</b><p class="text-[10px] text-gray-500 mt-1">รหัสตัวแทนนี้อาจไม่มีอยู่จริง<br>โปรดระวังมิจฉาชีพแอบอ้างนะคะ</p></div>`; return; }
+
+            let fbBtn = agent.fb ? `<a href="${agent.fb}" target="_blank" class="mt-3 bg-[#1877F2] text-white px-4 py-2 rounded-full text-[10px] font-bold inline-flex items-center justify-center gap-1 shadow-sm active:scale-95 w-3/4">📘 เฟซบุ๊กตัวแทน (คลิก)</a>` : '';
+            let statusBadge = agent.status === 'Probation' ? `<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-[10px] font-bold border border-yellow-200 shadow-sm">⏳ อยู่ในช่วงทดลองงาน</span>` : `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold border border-green-200 shadow-sm">✅ ตัวแทนอย่างเป็นทางการ (Verified)</span>`;
+            
+            cont.innerHTML = `
+            <div class="bg-white p-5 rounded-3xl border border-pink-100 shadow-md text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-r from-pink-200 to-main-pink opacity-20"></div>
+                <img src="${agent.pic}" class="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-sm relative z-10 mb-3">
+                <h3 class="font-bold text-dark-pink text-lg mb-2">${agent.name}</h3>
+                <div class="mb-3">${statusBadge}</div>
+                <p class="text-xs text-gray-500 mb-2 bg-pink-50 py-1.5 rounded-lg border border-pink-100">รหัสประจำตัว: <span class="text-main-pink font-bold text-sm ml-1">${agent.code}</span></p>
+                ${fbBtn}
+                <div class="mt-3 pt-2 border-t border-dashed border-gray-200"><p class="text-[9px] text-gray-400">✨ บุคคลนี้ได้รับการรับรองจากทางร้าน ✨<br>สามารถสั่งงานผ่านตัวแทนท่านนี้ได้เลยค่ะ</p></div>
+            </div>`;
+        }
+
+        function openAgentCheckModal() {
+            const m = document.getElementById('agentCheckModal'), c = document.getElementById('agentCheckModalContent');
+            document.getElementById('agentInputCode').value=''; document.getElementById('agentInputQueue').value=''; document.getElementById('agentResultContainer').classList.add('hidden');
+            m.classList.remove('opacity-0', 'pointer-events-none'); setTimeout(() => c.classList.remove('translate-y-10', 'scale-95'), 10);
+        }
+        function closeAgentCheckModal() { document.getElementById('agentCheckModalContent').classList.add('translate-y-10', 'scale-95'); setTimeout(() => document.getElementById('agentCheckModal').classList.add('opacity-0', 'pointer-events-none'), 300); }
+        
+        function checkAgentCustomer() {
+            const code = document.getElementById('agentInputCode').value.trim(), queue = document.getElementById('agentInputQueue').value.trim(), cont = document.getElementById('agentResultContainer');
+            cont.classList.remove('hidden');
+            
+            if(!code) { cont.innerHTML = `<div class="bg-red-50 p-3 rounded-xl"><b class="text-red-600 text-xs">❌ โปรดใส่รหัสตัวแทน</b></div>`; return; }
+            
+            const agent = db.agents.find(a => a.code === code);
+            if(!agent) { cont.innerHTML = `<div class="bg-red-50 p-3 rounded-xl"><b class="text-red-600 text-xs">❌ ไม่พบรหัสตัวแทนนี้ในระบบ</b></div>`; return; }
+
+            if(!queue) {
+                cont.innerHTML = `<div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200"><b class="text-yellow-700 text-xs">⚠️ กรุณาใส่ "รหัสคิวลูกค้า" เพื่อดูยอดโอนเงินนะคะ</b></div>`;
+                return;
+            }
+
+            const order = db.orders.find(o => o.agent === code && o.id.toLowerCase() === queue.toLowerCase());
+            if(!order) { cont.innerHTML = `<div class="bg-red-50 p-3 rounded-xl"><b class="text-red-600 text-xs">❌ ไม่พบออเดอร์ (รหัสคิวไม่ถูกต้อง)</b></div>`; return; }
+            
+            const rate = agent.rate || 30;
+            const agentComm1 = (order.total * rate) / 100;
+            const shopGets1 = order.total - agentComm1;
+            
+            const agentComm2 = order.extraLinePrice ? (order.extraLinePrice * rate)/100 : 0;
+            const shopGets2 = order.extraLinePrice ? (order.extraLinePrice - agentComm2) : 0;
+
+            let transferUI1 = '';
+            if (order.agentPaid1 === true) transferUI1 = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold block text-center w-full mt-2">✅ แอดมินอนุมัติสลิปแล้ว</span>`;
+            else if (order.agentPaid1 === 'pending') transferUI1 = `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-[10px] font-bold block text-center w-full mt-2">⏳ ส่งสลิปแล้ว รอแอดมินตรวจสอบ</span>`;
+            else transferUI1 = `<button onclick="openPaymentModal('${order.id}', 1, ${shopGets1})" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2.5 rounded-lg text-[11px] font-bold active:scale-95 shadow-md mt-2">💳 โอนเงินให้ร้าน (ยอด ${shopGets1.toFixed(0)} ฿)</button>`;
+
+            let transferUI2 = '';
+            if(order.extraLinePrice > 0) {
+                let badge2 = '';
+                if (order.agentPaid2 === true) badge2 = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold block text-center w-full mt-2">✅ แอดมินอนุมัติสลิปส่วนต่างแล้ว</span>`;
+                else if (order.agentPaid2 === 'pending') badge2 = `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-[10px] font-bold block text-center w-full mt-2">⏳ ส่งสลิปแล้ว รอแอดมินตรวจสอบ</span>`;
+                else badge2 = `<button onclick="openPaymentModal('${order.id}', 2, ${shopGets2})" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 rounded-lg text-[11px] font-bold active:scale-95 shadow-md mt-2">💳 โอนส่วนต่างให้ร้าน (ยอด ${shopGets2.toFixed(0)} ฿)</button>`;
+                
+                transferUI2 = `
+                <div class="bg-orange-50 p-3 mt-3 rounded-xl border border-orange-100">
+                    <p class="font-bold text-orange-700 mb-2 text-xs">💸 รอบชำระส่วนต่าง (+ ${order.extraLinePrice} ฿)</p>
+                    <div class="space-y-1 text-[10px] mb-2 border-b border-orange-100 pb-2">
+                        <p class="flex justify-between"><span>หักค่าคอมฯ เข้ากระเป๋าตัวเอง:</span> <span class="text-gray-600">- ${agentComm2.toFixed(0)} ฿</span></p>
+                        <p class="flex justify-between font-bold text-xs mt-1"><span>คงเหลือที่ต้องโอนให้ร้าน:</span> <span class="text-orange-600">${shopGets2.toFixed(0)} ฿</span></p>
+                    </div>
+                    ${badge2}
+                </div>`;
+            }
+            
+            cont.innerHTML = `
+                <div class="bg-white p-4 rounded-xl border shadow-sm text-xs">
+                    <p class="font-bold text-main-pink mb-1 text-sm">ออเดอร์คิว: ${order.id}</p>
+                    <p class="text-gray-500 text-[10px] mb-3 border-b border-gray-100 pb-2">ลูกค้า: ${order.customer} | สถานะ: <span class="text-dark-pink">${order.status}</span></p>
+
+                    <div class="bg-pink-50 p-3 rounded-xl border border-pink-100">
+                        <p class="font-bold text-gray-800 mb-2 text-xs">💸 รอบชำระมัดจำ (ลูกค้าจ่าย ${order.total} ฿)</p>
+                        <div class="space-y-1 text-[10px] mb-2 border-b border-pink-100 pb-2">
+                            <p class="flex justify-between"><span>หักค่าคอมฯ เข้ากระเป๋าตัวเอง:</span> <span class="text-gray-600">- ${agentComm1.toFixed(0)} ฿</span></p>
+                            <p class="flex justify-between font-bold text-xs mt-1"><span>คงเหลือที่ต้องโอนให้ร้าน:</span> <span class="text-main-pink">${shopGets1.toFixed(0)} ฿</span></p>
+                        </div>
+                        ${transferUI1}
+                    </div>
+                    ${transferUI2}
+                </div>`;
+        }
+
+        let currentPayOrder = null;
+        let currentPayRound = null;
+
+        function openPaymentModal(orderId, round, amount) {
+            currentPayOrder = orderId;
+            currentPayRound = round;
+            
+            document.getElementById('payRoundText').innerText = round === 1 ? 'รอบชำระ: มัดจำเริ่มต้น' : 'รอบชำระ: ส่วนต่างเพิ่มเติม';
+            document.getElementById('payAmountText').innerText = amount.toFixed(0) + ' ฿';
+            document.getElementById('payReceiverName').value = '';
+            document.getElementById('paySlipFile').value = '';
+            document.getElementById('paySlipBase64').value = '';
+            switchPay('bank'); 
+            
+            const m = document.getElementById('paymentModal');
+            const c = document.getElementById('paymentModalContent');
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => c.classList.remove('scale-95'), 10);
+        }
+
+        function closePaymentModal() {
+            const m = document.getElementById('paymentModal');
+            const c = document.getElementById('paymentModalContent');
+            c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('opacity-0', 'pointer-events-none'), 300);
+        }
+
+        function switchPay(method) {
+            const btnB = document.getElementById('btnPayBank');
+            const btnW = document.getElementById('btnPayWallet');
+            const qrB = document.getElementById('qrBank');
+            const qrW = document.getElementById('qrWallet');
+
+            if(method === 'bank') {
+                btnB.classList.add('bg-white', 'shadow-sm', 'text-blue-600'); btnB.classList.remove('text-gray-500');
+                btnW.classList.remove('bg-white', 'shadow-sm', 'text-orange-600'); btnW.classList.add('text-gray-500');
+                qrB.classList.remove('hidden'); qrW.classList.add('hidden');
+            } else {
+                btnW.classList.add('bg-white', 'shadow-sm', 'text-orange-600'); btnW.classList.remove('text-gray-500');
+                btnB.classList.remove('bg-white', 'shadow-sm', 'text-blue-600'); btnB.classList.add('text-gray-500');
+                qrW.classList.remove('hidden'); qrB.classList.add('hidden');
+            }
+        }
+
+        function submitAgentPayment() {
+            const receiverName = document.getElementById('payReceiverName').value.trim();
+            if(!receiverName) {
+                alert('โปรดระบุชื่อบัญชีผู้รับโอนจากสลิปของคุณด้วยค่ะ');
+                return;
+            }
+            if(!receiverName.includes('กชกร')) {
+                alert('❌ ระบบปฏิเสธบิลอัตโนมัติ!\n\nตรวจพบว่าชื่อบัญชีผู้รับโอนไม่ถูกต้อง (ไม่ใช่ กชกร) กรุณาตรวจสอบการโอนเงินของท่านอีกครั้งค่ะ');
+                return;
+            }
+
+            const slipBase64 = document.getElementById('paySlipBase64').value;
+            if(!slipBase64) {
+                alert('กรุณาอัปโหลดรูปภาพสลิปยืนยันการโอนเงินด้วยค่ะ');
+                return;
+            }
+
+            const order = db.orders.find(o => o.id === currentPayOrder);
+            if(order) {
+                if(currentPayRound === 1) {
+                    order.agentPaid1 = 'pending';
+                    order.slip1Base64 = slipBase64;
+                }
+                if(currentPayRound === 2) {
+                    order.agentPaid2 = 'pending';
+                    order.slip2Base64 = slipBase64;
+                }
+                saveDB();
+                checkAgentCustomer(); 
+                alert('ระบบทำการส่งสลิปให้แอดมินตรวจสอบเรียบร้อยแล้วค่ะ! 💖\n(รอแอดมินอนุมัติในระบบนะคะ)');
+            }
+            closePaymentModal();
+        }
+
+        // Admin
+        function openAdminPanel() { renderAdminQueues(); renderAdminAgents(); renderAdminSlips(); document.getElementById('adminPanelModal').classList.remove('opacity-0', 'pointer-events-none'); }
+        function closeAdminPanel() { document.getElementById('adminPanelModal').classList.add('opacity-0', 'pointer-events-none'); }
+        function switchAdminTab(tab) {
+            ['queues', 'slips', 'agents', 'db'].forEach(t => { 
+                const tb = document.getElementById(`tab_${t}`);
+                const ct = document.getElementById(`admin_content_${t}`);
+                if(tb && ct) {
+                    tb.classList.remove('text-gray-800', 'border-gray-800'); 
+                    tb.classList.add('border-transparent'); 
+                    ct.classList.add('hidden'); 
+                }
+            });
+            document.getElementById(`tab_${tab}`).classList.add('text-gray-800', 'border-gray-800'); 
+            document.getElementById(`admin_content_${tab}`).classList.remove('hidden');
+        }
+        
+        function deleteOrder(id) {
+            if(confirm(`ยืนยันการลบคิว ${id} ออกจากระบบถาวรหรือไม่?\n(คิวที่เหลือในหน้าแรกจะขยับขึ้นมาอัตโนมัติ)`)) {
+                db.orders = db.orders.filter(o => o.id !== id);
+                saveDB();
+            }
+        }
+
+        function copyBriefText(orderId) {
+            const order = db.orders.find(o => o.id === orderId);
+            if(!order) return;
+            const b = order.fullBrief || {};
+            let customLinksText = '';
+            if(b.customLinks && b.customLinks.length > 0) {
+                customLinksText = b.customLinks.map(l => `- ${l.title}: ${l.url}`).join('\n');
+            } else { customLinksText = 'ไม่มีแนบมา'; }
+
+            const textToCopy = `[ข้อมูลร้าน]
+- ชื่อร้าน: ${b.shopName || '-'}
+- คำโปรย: ${b.slogan || '-'}
+- ติดต่อ: ${b.contact || '-'}
+[ข้อมูลในเว็บ]
+- งานรับทำ: ${b.services || '-'}
+- เงื่อนไข: ${b.conditions || '-'}
+- ขั้นตอนการสั่ง: ${b.orderSteps || '-'}
+- กฎของร้าน: ${b.shopRules || '-'}
+[สไตล์และบริการเสริม]
+- สีที่อยากได้: ${b.style || '-'}
+- แนวที่อยากได้: ${b.refWork || '-'}
+- ไดรฟ์รูปภาพ: ${b.logoLink || '-'}
+- รูปแบบดีไซน์: ${b.designChoice || '-'}
+- ลิงก์แบบร่างลูกค้า: ${b.customDesignLink || '-'}
+- ฟังก์ชันเพิ่มเติม: ${b.extraFunctions || '-'}
+[ลิงก์ผลงานที่ลูกค้าแนบมา]
+${customLinksText}
+[อื่นๆ]
+- หมายเหตุ: ${b.brief || '-'}`;
+
+            try {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert('คัดลอกบรีฟเรียบร้อยแล้ว! 📋');
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(textToCopy);
+                });
+            } catch(e) { fallbackCopyTextToClipboard(textToCopy); }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try { document.execCommand('copy'); alert('คัดลอกบรีฟเรียบร้อยแล้ว! 📋'); } 
+            catch (err) { alert('ไม่สามารถคัดลอกได้อัตโนมัติ กรุณาลากคลุมและคัดลอกเองค่ะ'); }
+            document.body.removeChild(textArea);
+        }
+
+        function verifyAdminSlip(orderId, round, status) {
+            const order = db.orders.find(o => o.id === orderId);
+            if(order) {
+                if(round === 1) {
+                    order.agentPaid1 = status;
+                    if(status === false) order.slip1Base64 = ''; 
+                }
+                if(round === 2) {
+                    order.agentPaid2 = status;
+                    if(status === false) order.slip2Base64 = '';
+                }
+                saveDB();
+                alert(status ? '✅ อนุมัติสลิปเรียบร้อย' : '❌ ปฏิเสธสลิปแล้ว ตัวแทนจะต้องส่งเข้ามาใหม่');
+            }
+        }
+
+        function renderAdminSlips() {
+            const container = document.getElementById('admin_content_slips');
+            const pendingOrders = db.orders.filter(o => o.agentPaid1 === 'pending' || o.agentPaid2 === 'pending');
+            
+            if(pendingOrders.length === 0) {
+                container.innerHTML = '<p class="text-xs text-center py-4 text-gray-400">ไม่มีสลิปรอตรวจสอบ</p>';
+                return;
+            }
+            
+            container.innerHTML = pendingOrders.map(o => {
+                let html = `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-xs mb-2">`;
+                html += `<p class="font-bold text-gray-800 border-b pb-1 mb-2">คิว: ${o.id} - ${o.customer} <br><span class="text-[10px] text-gray-500 font-normal">รหัสตัวแทนส่งยอด: <span class="text-main-pink font-bold">${o.agent}</span></span></p>`;
+                
+                if(o.agentPaid1 === 'pending') {
+                    html += `
+                    <div class="mb-3 bg-pink-50 p-2 rounded-lg border border-pink-100">
+                        <p class="font-bold text-main-pink mb-1 text-[11px]">💸 ตรวจยอดมัดจำ</p>
+                        <img src="${o.slip1Base64}" class="w-full h-auto max-h-48 object-contain rounded border border-pink-200 mb-2 bg-white">
+                        <div class="flex gap-2">
+                            <button onclick="verifyAdminSlip('${o.id}', 1, true)" class="flex-1 bg-green-500 text-white py-2 rounded-lg font-bold active:scale-95 shadow-sm">✅ อนุมัติ</button>
+                            <button onclick="verifyAdminSlip('${o.id}', 1, false)" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold active:scale-95 shadow-sm">❌ ปฏิเสธ</button>
+                        </div>
+                    </div>`;
+                }
+                if(o.agentPaid2 === 'pending') {
+                    html += `
+                    <div class="mb-3 bg-orange-50 p-2 rounded-lg border border-orange-100">
+                        <p class="font-bold text-orange-600 mb-1 text-[11px]">💸 ตรวจยอดส่วนต่าง</p>
+                        <img src="${o.slip2Base64}" class="w-full h-auto max-h-48 object-contain rounded border border-orange-200 mb-2 bg-white">
+                        <div class="flex gap-2">
+                            <button onclick="verifyAdminSlip('${o.id}', 2, true)" class="flex-1 bg-green-500 text-white py-2 rounded-lg font-bold active:scale-95 shadow-sm">✅ อนุมัติ</button>
+                            <button onclick="verifyAdminSlip('${o.id}', 2, false)" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold active:scale-95 shadow-sm">❌ ปฏิเสธ</button>
+                        </div>
+                    </div>`;
+                }
+                html += `</div>`;
+                return html;
+            }).join('');
+        }
+
+        function renderAdminQueues() {
+            document.getElementById('adminQueueList').innerHTML = [...db.orders].reverse().map(o => {
+                let itemsStr = `ทำเว็บ x${o.items?.main||1}`;
+                if(o.items?.addon1) itemsStr += `\nออกแบบร่างใหม่ x${o.items.addon1}`;
+                if(o.items?.addon2) itemsStr += `\nแบนเนอร์ x${o.items.addon2}`;
+                if(o.items?.addon3) itemsStr += `\nเพิ่มฟังก์ชัน x${o.items.addon3}`;
+
+                const b = o.fullBrief || {};
+                let customLinksHtml = '';
+                if(b.customLinks && b.customLinks.length > 0) {
+                    customLinksHtml = b.customLinks.map(l => `<a href="${l.url}" target="_blank" class="text-blue-500 underline ml-2 hover:text-main-pink">- ${l.title}</a>`).join('<br>');
+                } else { customLinksHtml = '<span class="text-gray-400 ml-2">ไม่มีแนบมา</span>'; }
+
+                const briefHtmlText = `
+<b class="text-gray-800">[ข้อมูลร้าน]</b>
+- ชื่อร้าน: ${b.shopName || '-'}
+- คำโปรย: ${b.slogan || '-'}
+- ติดต่อ: <a href="${b.contact}" target="_blank" class="text-blue-500 underline">${b.contact || '-'}</a>
+<b class="text-gray-800 mt-1 block">[ข้อมูลในเว็บ]</b>
+- งานรับทำ: ${b.services || '-'}
+- เงื่อนไข: ${b.conditions || '-'}
+- ขั้นตอนการสั่ง: ${b.orderSteps || '-'}
+- กฎของร้าน: ${b.shopRules || '-'}
+<b class="text-gray-800 mt-1 block">[สไตล์และบริการเสริม]</b>
+- สีที่อยากได้: ${b.style || '-'}
+- แนวที่ร้านมี: ${b.refWork || '-'}
+- ไดรฟ์รูปภาพ: <a href="${b.logoLink}" target="_blank" class="text-blue-500 underline">${b.logoLink || '-'}</a>
+- รูปแบบดีไซน์: ${b.designChoice || '-'}
+- ลิงก์แบบร่างลูกค้า: <a href="${b.customDesignLink}" target="_blank" class="text-blue-500 underline">${b.customDesignLink || '-'}</a>
+- ฟังก์ชันเพิ่มเติม: ${b.extraFunctions || '-'}
+<b class="text-gray-800 mt-1 block">[ลิงก์ผลงานที่ลูกค้าแนบมา]</b>
+${customLinksHtml}
+<b class="text-gray-800 mt-1 block">[อื่นๆ]</b>
+- หมายเหตุ: ${b.brief || '-'}`;
+                
+                let p1 = '';
+                if (o.agentPaid1 === true) p1 = '<span class="text-green-500 font-bold">โอนมัดจำแล้ว ✅</span>';
+                else if (o.agentPaid1 === 'pending') p1 = `<div class="flex flex-col gap-1 mt-1"><span class="text-yellow-600 font-bold text-[9px]">⏳ ตัวแทนส่งสลิปมัดจำแล้ว</span></div>`;
+                else p1 = '<span class="text-red-500 font-bold">❌ รอตัวแทนโอน</span>';
+
+                let p2 = '-ไม่มี-';
+                if(o.extraLinePrice > 0) {
+                    if (o.agentPaid2 === true) p2 = '<span class="text-green-500 font-bold">โอนส่วนต่างแล้ว ✅</span>';
+                    else if (o.agentPaid2 === 'pending') p2 = `<div class="flex flex-col gap-1 mt-1"><span class="text-yellow-600 font-bold text-[9px]">⏳ ตัวแทนส่งสลิปส่วนต่างแล้ว</span></div>`;
+                    else p2 = '<span class="text-red-500 font-bold">❌ รอตัวแทนโอนส่วนต่าง</span>';
+                }
+
+                return `
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-xs mb-2">
+                    <p class="font-bold text-gray-800 border-b pb-1 mb-2">${o.id} - ${o.customer} <span class="float-right text-[9px] text-gray-400">${o.date}</span></p>
+                    
+                    <div class="bg-gray-50 p-2 rounded-lg mb-2 text-[10px] text-gray-600">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-gray-800 text-[11px]">รายละเอียดบรีฟลูกค้า</span>
+                            <button onclick="copyBriefText('${o.id}')" class="bg-main-pink text-white px-2 py-1 rounded text-[9px] font-bold active:scale-95 shadow-sm">📋 คัดลอกบรีฟ</button>
+                        </div>
+                        <details class="cursor-pointer outline-none mt-2">
+                            <summary class="font-bold text-gray-800 hover:text-main-pink transition">[+] กดเพื่อเปิดดูบรีฟ / ลิงก์</summary>
+                            <div class="mt-1 text-[10px] text-gray-600 bg-white p-2 rounded border border-gray-200">${briefHtmlText}</div>
+                        </details>
+                        <p class="pt-1 border-t border-gray-200 mt-2"><b class="text-gray-800">รายการที่สั่ง:</b><br>${itemsStr}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-2 bg-gray-50 p-2 rounded border border-gray-100">
+                        <p><b>ตัวแทน:</b> ${o.agent}</p><p><b>มัดจำลูกค้า:</b> ${o.total} ฿</p>
+                        <div><b>รอบมัดจำ:</b><br>${p1}</div><div><b>รอบส่วนต่าง:</b><br>${p2}</div>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                        <p class="font-bold">${o.status} <span class="text-main-pink">(${o.progress}%)</span></p>
+                        <div class="flex gap-1">
+                            <button onclick="openAdminEditQueue('${o.id}')" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold active:scale-95">อัปเดต</button>
+                            <button onclick="deleteOrder('${o.id}')" class="bg-red-500 text-white px-2.5 py-1.5 rounded-lg active:scale-95">🗑️</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="text-xs text-center py-4 text-gray-400">ไม่มีออเดอร์ค้างในระบบ</p>';
+        }
+        
+        let editingQueueId = null;
+        function openAdminEditQueue(id) {
+            const order = db.orders.find(o => o.id === id); if(!order) return;
+            editingQueueId = id; document.getElementById('editQ_id').innerText = `(${id})`;
+            document.getElementById('editQ_status').value = order.status; document.getElementById('editQ_progress').value = order.progress; document.getElementById('editQ_worker').value = order.worker;
+            
+            document.getElementById('editQ_extraReason').value = order.extraLineReason || '';
+            document.getElementById('editQ_extraPrice').value = order.extraLinePrice || '';
+            
+            document.getElementById('editQ_commPaid1').checked = order.agentPaid1 === true;
+            document.getElementById('editQ_commPaid2').checked = order.agentPaid2 === true;
+            
+            document.getElementById('adminEditQueueModal').classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => document.getElementById('adminEditQueueModalContent').classList.remove('scale-95'), 10);
+        }
+        function closeAdminEditQueue() { document.getElementById('adminEditQueueModalContent').classList.add('scale-95'); setTimeout(() => document.getElementById('adminEditQueueModal').classList.add('opacity-0', 'pointer-events-none'), 300); }
+        
+        function saveAdminEditQueue() {
+            const order = db.orders.find(o => o.id === editingQueueId);
+            if(order) {
+                order.status = document.getElementById('editQ_status').value; order.progress = parseInt(document.getElementById('editQ_progress').value) || 0; order.worker = document.getElementById('editQ_worker').value;
+                order.extraLineReason = document.getElementById('editQ_extraReason').value || '';
+                order.extraLinePrice = parseInt(document.getElementById('editQ_extraPrice').value) || 0;
+                
+                if(document.getElementById('editQ_commPaid1').checked) order.agentPaid1 = true;
+                else if(order.agentPaid1 === true) order.agentPaid1 = false;
+
+                if(document.getElementById('editQ_commPaid2').checked) order.agentPaid2 = true;
+                else if(order.agentPaid2 === true) order.agentPaid2 = false;
+
+                saveDB();
+            }
+            closeAdminEditQueue();
+        }
+
+        function adminAddAgent() {
+            const code = document.getElementById('newAgCode').value.trim(), name = document.getElementById('newAgName').value.trim();
+            const pic = document.getElementById('newAgPic').value.trim(), fb = document.getElementById('newAgFb').value.trim();
+            const status = document.getElementById('newAgStatus').value;
+            const rate = parseInt(document.getElementById('newAgRate').value)||30;
+            
+            if(!code || !name) return alert('กรุณาใส่รหัสและชื่อตัวแทน');
+            if(db.agents.find(a=>a.code===code)) return alert('รหัสซ้ำ');
+            
+            const finalPic = pic ? pic : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f28fab&color=fff`;
+            db.agents.push({code, name, contact: '-', fb, pic: finalPic, rate, status}); saveDB(); 
+            
+            ['newAgCode','newAgName','newAgPic','newAgFb'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('newAgStatus').value = 'Official';
+            alert('เพิ่มตัวแทนเรียบร้อย!');
+        }
+
+        function renderAdminAgents() { 
+            document.getElementById('adminAgentList').innerHTML = db.agents.map((a,i)=>`
+            <div class="bg-white p-2 rounded-xl border border-gray-200 flex justify-between items-center shadow-sm">
+                <div class="flex items-center gap-3">
+                    <img src="${a.pic}" class="w-10 h-10 rounded-full object-cover bg-gray-100">
+                    <div>
+                        <b class="text-xs text-gray-800">${a.name} <span class="text-[9px] bg-pink-100 text-main-pink px-1 rounded ml-1">รหัส: ${a.code}</span></b>
+                        <p class="text-[9px] text-gray-500 mt-0.5">คอม: ${a.rate}% | ${a.status==='Probation' ? '⏳ ทดลองงาน' : '✅ เป็นตัวแทนแล้ว'}</p>
+                    </div>
+                </div>
+                <button onclick="db.agents.splice(${i},1);saveDB()" class="text-red-500 bg-red-50 px-2 py-1.5 rounded-lg text-[10px] font-bold active:scale-95">ลบ</button>
+            </div>`).join(''); 
+        }
+
+        // ================= GEMINI API INTEGRATION =================
+        const apiKey = "";
+        
+        async function callGeminiAPI(promptText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: promptText }] }], systemInstruction: { parts: [{ text: "คุณคือผู้ช่วย AI สำหรับร้านรับทำเว็บไซต์ ช่วยลูกค้าคิดคำโปรยหรือขยายความต้องการให้ชัดเจน น่ารัก" }] } };
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let attempt = 0; attempt <= 5; attempt++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                } catch (error) {
+                    if (attempt === 5) { alert("ขออภัยค่ะ AI ขัดข้อง กรุณาลองใหม่นะคะ 🙏"); return null; }
+                    await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+                }
+            }
+        }
+
+        async function generateSlogan() {
+            const shopName = document.getElementById('draft_shopName').value || 'ร้านค้า';
+            const services = document.getElementById('draft_services').value || 'เว็บไซต์';
+            const btn = document.getElementById('btnAIslogan');
+            const input = document.getElementById('draft_slogan');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳'; btn.disabled = true;
+            const result = await callGeminiAPI(`คิดคำโปรยสั้นๆ 1 ประโยค (ไม่เกิน 10 คำ) สำหรับร้านชื่อ "${shopName}" บริการ "${services}"`);
+            if(result) { input.value = result.trim().replace(/^["']|["']$/g, ''); localStorage.setItem('draft_slogan', input.value); }
+            btn.innerHTML = originalText; btn.disabled = false;
+        }
+
+        async function enhanceBrief() {
+            const briefInput = document.getElementById('draft_brief');
+            const currentBrief = briefInput.value.trim();
+            const shopName = document.getElementById('draft_shopName').value || 'ลูกค้า';
+            if(!currentBrief) { alert('กรุณาพิมพ์รายละเอียดคร่าวๆ ก่อนให้ AI ช่วยขยายนะคะ ✨'); return; }
+            const btn = document.getElementById('btnEnhanceBrief');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✨ กำลังเสกบรีฟให้เป๊ะปัง...'; btn.disabled = true;
+            const result = await callGeminiAPI(`ลูกค้าร้าน "${shopName}" บรีฟว่า: "${currentBrief}" ช่วยเรียบเรียงบรีฟนี้ให้อ่านง่าย สำหรับส่งให้โปรแกรมเมอร์ (ไม่เกิน 4 บรรทัด)`);
+            if(result) { briefInput.value = result.trim(); localStorage.setItem('draft_brief', briefInput.value); }
+            btn.innerHTML = originalText; btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
