@@ -90,15 +90,25 @@
             <p class="text-[9px] text-gray-400">* บริการเว็บอื่นๆ สอบถามเพิ่มเติมได้เลยค่า</p>
         </div>
 
-        <!-- 2. วิดีโอพรีเซนต์ -->
+        <!-- 2. วิดีโอพรีเซนต์ (ใส่ GIF) -->
         <div class="bg-card-white rounded-3xl p-3 shadow-sm border border-white mb-6">
-            <div class="bg-gradient-to-br from-[#ffd1df] to-[#ffb6c1] rounded-2xl aspect-[16/9] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-pink-300 text-xl">🩷</span>
-                    <div class="w-12 h-12 bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <span class="text-pink-300 text-xl">🩷</span>
+            <div class="rounded-2xl aspect-[16/9] relative overflow-hidden cursor-pointer group bg-pink-50">
+                <!-- รูปภาพ GIF -->
+                <img src="https://tenor.com/9LJ6.gif" alt="คลิปหัวใจสีพาสเทล" class="absolute inset-0 w-full h-full object-cover opacity-90">
+                
+                <!-- เลเยอร์ทับด้านบน (ไอคอน Play และข้อความ) -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/10 hover:bg-white/20 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-pink-300 text-xl drop-shadow-md">🩷</span>
+                        <div class="w-12 h-12 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-md border border-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-main-pink ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                        <span class="text-pink-300 text-xl drop-shadow-md">🩷</span>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full text-dark-pink text-xs font-bold shadow-sm border border-white">
+                        [ คลิปหัวใจสีพาสเทล ]
+                    </div>
                 </div>
-                <div class="bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs font-medium">[ คลิปหัวใจสีพาสเทล ]</div>
             </div>
         </div>
 
